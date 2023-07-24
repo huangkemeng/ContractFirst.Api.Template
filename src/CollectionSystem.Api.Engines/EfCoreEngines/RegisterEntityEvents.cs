@@ -7,11 +7,11 @@ using CollectionSystem.Api.Primary.Entities.EntityEvents.Bases;
 
 namespace CollectionSystem.Api.Engines.EfCoreEngines;
 
-public class RegisterEntityEvent : IBuilderEngine
+public class RegisterEntityEvents : IBuilderEngine
 {
     private readonly ContainerBuilder containerBuilder;
 
-    public RegisterEntityEvent(ContainerBuilder containerBuilder)
+    public RegisterEntityEvents(ContainerBuilder containerBuilder)
     {
         this.containerBuilder = containerBuilder;
     }
@@ -19,43 +19,43 @@ public class RegisterEntityEvent : IBuilderEngine
     public void Run()
     {
         var type = typeof(IHasEntityEvent<>);
-        var imainType = typeof(IMainEntity);
+        var iMainType = typeof(IMainEntity);
         var eventAssembly = type.Assembly;
         var eventTypes = eventAssembly
             .ExportedTypes
             .Where(e => e.IsClass && !e.IsAbstract &&
                         (e.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == type) ||
-                         imainType.IsAssignableFrom(e)))
+                         iMainType.IsAssignableFrom(e)))
             .ToList();
         var eventBuilderType = typeof(EntityEventBuilder<>);
-        var addEventTyoe = typeof(IMainEntityAddedEvent);
+        var addEventType = typeof(IMainEntityAddedEvent);
         var changedEventType = typeof(IMainEntityUpdatedEvent);
-        var eventEnityType = typeof(EventEnity<>);
+        var eventEntityType = typeof(EventEnity<>);
         var entityEventsContainer = new EntityEventsContainer();
         foreach (var eventType in eventTypes)
         {
             Type? parameterType = null;
             object? parameterObject = null;
-            if (imainType.IsAssignableFrom(eventType))
+            if (iMainType.IsAssignableFrom(eventType))
             {
                 parameterType = eventBuilderType.MakeGenericType(eventType);
-                var eventEnityGenericType = eventEnityType.MakeGenericType(eventType);
+                var eventEntityGenericType = eventEntityType.MakeGenericType(eventType);
                 parameterObject = Activator.CreateInstance(parameterType, entityEventsContainer);
-                var eneityMethod = parameterType.GetMethod(nameof(EntityEventBuilder<IEntityPrimary>.Entity),
+                var entityMethod = parameterType.GetMethod(nameof(EntityEventBuilder<IEntityPrimary>.Entity),
                     BindingFlags.Public | BindingFlags.Instance);
-                if (eneityMethod != null)
+                if (entityMethod != null)
                 {
-                    var eneity = eneityMethod.Invoke(parameterObject, null);
-                    var hasAddedEventMethod = eventEnityGenericType
+                    var entity = entityMethod.Invoke(parameterObject, null);
+                    var hasAddedEventMethod = eventEntityGenericType
                         .GetMethods(BindingFlags.Public | BindingFlags.Instance).FirstOrDefault(e =>
                             e.Name == nameof(EventEnity<IEntityPrimary>.HasAddedEvent) && e.IsGenericMethod);
-                    hasAddedEventMethod = hasAddedEventMethod?.MakeGenericMethod(addEventTyoe);
-                    eneity = hasAddedEventMethod?.Invoke(eneity, null);
-                    var hasChangedEventMethod = eventEnityGenericType
+                    hasAddedEventMethod = hasAddedEventMethod?.MakeGenericMethod(addEventType);
+                    entity = hasAddedEventMethod?.Invoke(entity, null);
+                    var hasChangedEventMethod = eventEntityGenericType
                         .GetMethods(BindingFlags.Public | BindingFlags.Instance).FirstOrDefault(e =>
                             e.Name == nameof(EventEnity<IEntityPrimary>.HasUpdatedEvent) && e.IsGenericMethod);
                     hasChangedEventMethod = hasChangedEventMethod?.MakeGenericMethod(changedEventType);
-                    eneity = hasChangedEventMethod?.Invoke(eneity, null);
+                    entity = hasChangedEventMethod?.Invoke(entity, null);
                 }
             }
 

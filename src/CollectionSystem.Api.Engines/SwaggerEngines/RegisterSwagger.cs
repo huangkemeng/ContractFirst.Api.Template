@@ -47,7 +47,7 @@ public class RegisterSwagger : IBuilderEngine
                         var fieldInfo = typeof(SwaggerApiGroupNames).GetField(docName)!;
                         var info = fieldInfo.GetCustomAttributes(typeof(SwaggerGroupInfoAttribute), false)
                             .OfType<SwaggerGroupInfoAttribute>().FirstOrDefault();
-                        if (info != null && info.MatchRule != null && apiDescription.RelativePath != null)
+                        if (info is { MatchRule: not null } && apiDescription.RelativePath != null)
                         {
                             var matched = new Regex(info.MatchRule).Match(apiDescription.RelativePath);
                             return matched.Success;
@@ -60,7 +60,7 @@ public class RegisterSwagger : IBuilderEngine
             {
                 Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n 
                       Enter 'Bearer' [space] and then your token in the text input below.
-                      \r\n\r\nExample: 'Bearer 12345abcdef'",
+                      \r\n\r\nExample: 'Bearer token'",
                 Name = "Authorization",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.ApiKey,

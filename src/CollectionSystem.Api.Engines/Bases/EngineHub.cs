@@ -7,8 +7,10 @@ namespace CollectionSystem.Api.Engines.Bases;
 
 public static class EngineHub
 {
-    public static WebApplication BuildWithEngines(this WebApplicationBuilder builder)
+    public static WebApplication BuildWithEngines(this WebApplicationBuilder builder,
+        Action<BuildEngineOptions>? options = null)
     {
+        BuildEngineOptions buildEngineOptions = new BuildEngineOptions();
         WebApplication? app = null;
         builder.RegisterEngines();
         builder.StartBuilderEngines();
@@ -24,18 +26,21 @@ public static class EngineHub
 
     private static void RegisterEngines(this WebApplicationBuilder builder)
     {
-        var iengineType = typeof(IEngine);
-        var engineTypes = iengineType
+        var iEngineType = typeof(IEngine);
+        var engineTypes = iEngineType
             .Assembly
             .ExportedTypes
-            .Where(e => e.GetInterfaces().Contains(iengineType) && e.IsClass && !e.IsAbstract)
+            .Where(e => e.GetInterfaces().Contains(iEngineType) && e.IsClass && !e.IsAbstract)
             .ToList();
 
         foreach (var engineType in engineTypes)
         {
-            var itype = engineType.GetInterfaces()
-                .FirstOrDefault(e => e.GetInterfaces().Contains(iengineType) && e != iengineType);
-            if (itype != null) builder.Services.AddSingleton(itype, engineType);
+            var iBaseType = engineType.GetInterfaces()
+                .FirstOrDefault(e => e.GetInterfaces().Contains(iEngineType) && e != iEngineType);
+            if (iBaseType != null)
+            {
+                builder.Services.AddSingleton(iBaseType, engineType);
+            }
         }
     }
 
@@ -47,19 +52,28 @@ public static class EngineHub
             {
                 builder.Services.AddSingleton(container);
                 var services = builder.Services.BuildServiceProvider();
-                var engines = services.GetServices<IBuilderEngine>();
-                if (engines != null)
+                var engines = services.GetServices<IBuilderEngine>().ToArray();
+                if (engines is { Length: > 0 })
+                {
                     foreach (var engine in engines)
+                    {
                         engine.Run();
+                    }
+                }
+
                 container.Populate(builder.Services);
             });
     }
 
     private static void StartAppEngines(this WebApplication app)
     {
-        var engines = app.Services.GetServices<IAppEngine>();
-        if (engines != null)
+        var engines = app.Services.GetServices<IAppEngine>().ToArray();
+        if (engines is { Length: > 0 })
+        {
             foreach (var engine in engines)
+            {
                 engine.Run();
+            }
+        }
     }
 }

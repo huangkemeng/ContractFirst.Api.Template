@@ -1,8 +1,7 @@
-﻿using CollectionSystem.Api.FilterAndMiddlewares;
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace CollectionSystem.Api.Middlewares;
+namespace CollectionSystem.Api.FilterAndMiddlewares;
 
 public class AutoResolveFilter : IAsyncActionFilter
 {

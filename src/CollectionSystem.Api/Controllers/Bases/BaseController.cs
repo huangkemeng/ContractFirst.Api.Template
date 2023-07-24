@@ -1,5 +1,4 @@
 ﻿using CollectionSystem.Api.FilterAndMiddlewares;
-using CollectionSystem.Api.Middlewares;
 using Mediator.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

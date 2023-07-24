@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CollectionSystem.Api.Engines.EfCoreEngines;
 
-public class RegisterDbSet : IBuilderEngine
+public class RegisterDbSets : IBuilderEngine
 {
     private readonly ContainerBuilder container;
 
-    public RegisterDbSet(ContainerBuilder container)
+    public RegisterDbSets(ContainerBuilder container)
     {
         this.container = container;
     }

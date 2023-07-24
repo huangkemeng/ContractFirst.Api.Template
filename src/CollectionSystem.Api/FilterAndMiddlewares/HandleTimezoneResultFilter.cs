@@ -8,6 +8,7 @@ public class HandleTimezoneResultFilter : IResultFilter
 {
     public void OnResultExecuted(ResultExecutedContext context)
     {
+        
     }
 
     public void OnResultExecuting(ResultExecutingContext context)
@@ -20,7 +21,7 @@ public class HandleTimezoneResultFilter : IResultFilter
         }
     }
 
-    public object? ConvertToSpecificTimezone(object value, string timezone)
+    private object? ConvertToSpecificTimezone(object value, string timezone)
     {
         if (int.TryParse(timezone, out var timezoneOffset))
         {
@@ -47,8 +48,8 @@ public class HandleTimezoneResultFilter : IResultFilter
             }
             case JTokenType.Array:
             {
-                var jpropertyList = token.Children();
-                foreach (var item in jpropertyList) UpdateDateTimeToSpecificTimezone(item, timeZoneInfo);
+                var jPropertyList = token.Children();
+                foreach (var item in jPropertyList) UpdateDateTimeToSpecificTimezone(item, timeZoneInfo);
                 break;
             }
             case JTokenType.Property:

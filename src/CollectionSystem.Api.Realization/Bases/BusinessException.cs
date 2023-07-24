@@ -59,22 +59,7 @@ public enum BusinessExceptionTypeEnum
     [Description("身份异常")] UnauthorizedIdentity,
 
     /// <summary>
-    ///     兼容性
-    /// </summary>
-    [Description("兼容性错误")] Compatibility,
-
-    /// <summary>
-    ///     数据为空
-    /// </summary>
-    [Description("数据为空")] DataNull,
-
-    /// <summary>
     ///     权限不足
     /// </summary>
     [Description("权限不足")] Forbidden,
-
-    /// <summary>
-    ///     状态不允许
-    /// </summary>
-    [Description("状态不允许")] DataStatus
 }

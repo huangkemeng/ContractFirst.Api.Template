@@ -16,7 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace CollectionSystem.Api.Engines.ConventionEngines;
 
 /// <summary>
-///     一些常规的配置
+/// 一些常规的配置
 /// </summary>
 public class ConfigureConvention : IBuilderEngine
 {

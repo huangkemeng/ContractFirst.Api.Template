@@ -3,4 +3,5 @@
 [AttributeUsage(AttributeTargets.Property)]
 public class AutoResolveAttribute : Attribute
 {
+    
 }

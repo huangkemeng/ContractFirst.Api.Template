@@ -7,15 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0"/>
-        <PackageReference Include="Mediator.Net.Autofac" Version="4.7.0"/>
-        <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+        <PackageReference Include="Mediator.Net.Autofac" Version="4.7.0" />
+        <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CollectionSystem.Api.Realization\CollectionSystem.Api.Realization.csproj"/>
+        <ProjectReference Include="..\CollectionSystem.Api.Realization\CollectionSystem.Api.Realization.csproj" />
     </ItemGroup>
 
 </Project>

@@ -30,16 +30,16 @@ public class RegisterMediator : IBuilderEngine
     {
         var mediatorBuilder = new MediatorBuilder();
         var realizationAssembly = typeof(IRealization).Assembly;
-        var icontractType = typeof(IContract<>);
-        var contractTypes = icontractType.Assembly?
+        var iContractType = typeof(IContract<>);
+        var contractTypes = iContractType.Assembly?
             .ExportedTypes
-            .Where(x => x.GetInterfaces().Any(e => e.IsGenericType && e.GetGenericTypeDefinition() == icontractType) &&
+            .Where(x => x.GetInterfaces().Any(e => e.IsGenericType && e.GetGenericTypeDefinition() == iContractType) &&
                         x.IsInterface && !x.IsGenericType)
             .ToArray();
 
         var realizationTypes = realizationAssembly?
             .ExportedTypes
-            .Where(e => e.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == icontractType) &&
+            .Where(e => e.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == iContractType) &&
                         e.IsClass && !e.IsAbstract)
             .ToArray();
         builder.RegisterType<DoValidatePipe>()
@@ -92,18 +92,18 @@ public class RegisterMediator : IBuilderEngine
                     var contractType = handlerType.GetInterfaces().FirstOrDefault();
                     if (contractType != null)
                     {
-                        var ihandlerType = GetContractInputAndOutputType(contractType);
-                        if (ihandlerType != null)
+                        var iHandlerType = GetContractInputAndOutputType(contractType);
+                        if (iHandlerType != null)
                         {
-                            messageBindings.Add(new MessageBinding(ihandlerType.GenericTypeArguments[0], handlerType));
+                            messageBindings.Add(new MessageBinding(iHandlerType.GenericTypeArguments[0], handlerType));
                             var validatorType =
-                                typeof(ContractValidator<>).MakeGenericType(ihandlerType.GenericTypeArguments[0]);
+                                typeof(ContractValidator<>).MakeGenericType(iHandlerType.GenericTypeArguments[0]);
                             builder.Register(context =>
                                 {
                                     var command = Activator.CreateInstance(validatorType)!;
                                     return command;
                                 })
-                                .As(typeof(IValidator<>).MakeGenericType(ihandlerType.GenericTypeArguments[0]))
+                                .As(typeof(IValidator<>).MakeGenericType(iHandlerType.GenericTypeArguments[0]))
                                 .InstancePerDependency();
                         }
                     }
@@ -114,9 +114,9 @@ public class RegisterMediator : IBuilderEngine
             mediatorBuilder.ConfigureGlobalReceivePipe(c =>
             {
                 var doValidatePipe = c.DependencyScope.Resolve<DoValidatePipe>();
-                var efcorePipe = c.DependencyScope.Resolve<EfCorePipe>();
+                var efCorePipe = c.DependencyScope.Resolve<EfCorePipe>();
                 c.AddPipeSpecification(doValidatePipe);
-                c.AddPipeSpecification(efcorePipe);
+                c.AddPipeSpecification(efCorePipe);
             });
         }
 
@@ -133,17 +133,17 @@ public class RegisterMediator : IBuilderEngine
 
     private static SyntaxTree? GetSyntaxTree(Type contractType)
     {
-        var ihandlerType = GetContractInputAndOutputType(contractType);
-        if (ihandlerType != null)
+        var iHandlerType = GetContractInputAndOutputType(contractType);
+        if (iHandlerType != null)
         {
             var root = SyntaxFactory.CompilationUnit();
             var returnTypeString = nameof(Task);
             var body = $"await {nameof(Task)}.{nameof(Task.CompletedTask)};";
-            if (ihandlerType.GenericTypeArguments.Length == 2)
+            if (iHandlerType.GenericTypeArguments.Length == 2)
             {
-                returnTypeString = $"{nameof(Task)}<{ihandlerType.GenericTypeArguments[1].Name}>";
+                returnTypeString = $"{nameof(Task)}<{iHandlerType.GenericTypeArguments[1].Name}>";
                 body =
-                    $"return await {nameof(BusinessFaker<object>)}<{ihandlerType.GenericTypeArguments[1].Name}>.{nameof(BusinessFaker<object>.CreateAsync)}();";
+                    $"return await {nameof(BusinessFaker<object>)}<{iHandlerType.GenericTypeArguments[1].Name}>.{nameof(BusinessFaker<object>.CreateAsync)}();";
             }
 
             root = root.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(IContract<>).Namespace!)))
@@ -168,7 +168,7 @@ public class RegisterMediator : IBuilderEngine
                 .AddParameterListParameters(
                     SyntaxFactory.Parameter(SyntaxFactory.Identifier("context"))
                         .WithType(SyntaxFactory.ParseTypeName(
-                            $"IReceiveContext<{ihandlerType.GenericTypeArguments[0].Name}>")),
+                            $"IReceiveContext<{iHandlerType.GenericTypeArguments[0].Name}>")),
                     SyntaxFactory.Parameter(SyntaxFactory.Identifier("cancellationToken"))
                         .WithType(SyntaxFactory.ParseTypeName("CancellationToken"))
                 )
@@ -189,7 +189,7 @@ public class RegisterMediator : IBuilderEngine
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(SyntaxFactory.Parameter(SyntaxFactory.Identifier("validator"))
                     .WithType(SyntaxFactory.ParseTypeName(
-                        $"{nameof(ContractValidator<IMessage>)}<{ihandlerType.GenericTypeArguments[0].Name}>")))
+                        $"{nameof(ContractValidator<IMessage>)}<{iHandlerType.GenericTypeArguments[0].Name}>")))
                 .WithBody(SyntaxFactory.Block(
                     SyntaxFactory.ParseStatement("return;")
                 ));
