@@ -23,11 +23,11 @@
       "modifiers": [
         {
           "exclude": [
-            "**/bin/**",
-            "**/obj/**",
-            "**/.vs/**",
-            "**/.git/**",
-            "**/.idea/**",
+            "bin/**",
+            "obj/**",
+            ".vs/**",
+            ".git/**",
+            ".idea/**",
             "global.json",
             ".gitignore",
             ".gitattributes"

@@ -30,14 +30,14 @@ public class RegisterSwagger : IBuilderEngine
                 });
             });
 
-            options.SwaggerDoc("Other", new OpenApiInfo
+            options.SwaggerDoc("Ungrouped", new OpenApiInfo
             {
-                Title = "其他"
+                Title = "ContractFirst.Api"
             });
 
             options.DocInclusionPredicate((docName, apiDescription) =>
             {
-                if (docName == "Other") return string.IsNullOrEmpty(apiDescription.GroupName);
+                if (docName == "Ungrouped") return string.IsNullOrEmpty(apiDescription.GroupName);
 
                 if (docName == apiDescription.GroupName)
                     return true;
