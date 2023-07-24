@@ -28,7 +28,9 @@
             "**/.vs/**",
             "**/.git/**",
             "**/.idea/**",
-            "global.json"
+            "global.json",
+            ".gitignore",
+            ".gitattributes"
           ]
         }
       ]
