@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace CollectionSystem1.Api.CodeGenerator;
+namespace CollectionSystem.Api.CodeGenerator;
 
 [Generator]
 public class BusinessDbContextGenerator : ISourceGenerator
