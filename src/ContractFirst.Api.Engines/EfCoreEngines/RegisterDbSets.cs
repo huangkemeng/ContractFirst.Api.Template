@@ -9,13 +9,23 @@ namespace ContractFirst.Api.Engines.EfCoreEngines;
 public class RegisterDbSets : IBuilderEngine
 {
     private readonly ContainerBuilder container;
+    private readonly EngineBuilderOptions builderOptions;
 
-    public RegisterDbSets(ContainerBuilder container)
+    public RegisterDbSets(ContainerBuilder container, EngineBuilderOptions builderOptions)
     {
         this.container = container;
+        this.builderOptions = builderOptions;
     }
 
     public void Run()
+    {
+        if (builderOptions.EnableEfCore)
+        {
+            AddDbContext();
+        }
+    }
+
+    private void AddDbContext()
     {
         container.RegisterType<SqlDbContext>()
             .AsSelf()

@@ -7,15 +7,26 @@ namespace ContractFirst.Api.Engines.EfCoreEngines;
 public class UseMigrations : IAppEngine
 {
     private readonly ILifetimeScope migrateScope;
+    private readonly EngineBuilderOptions builderOptions;
 
-    public UseMigrations(ILifetimeScope migrateScope)
+    public UseMigrations(ILifetimeScope migrateScope, EngineBuilderOptions builderOptions)
     {
         this.migrateScope = migrateScope;
+        this.builderOptions = builderOptions;
     }
 
     public void Run()
     {
-        var dbContext = migrateScope.Resolve<DbContext>()!;
+        if (builderOptions.EnableEfCore)
+        {
+            RunEfCoreMigrations();
+        }
+    }
+
+    private void RunEfCoreMigrations()
+    {
+        var newScope = migrateScope.BeginLifetimeScope();
+        var dbContext = newScope.Resolve<DbContext>()!;
         var connectString = dbContext.Database.GetConnectionString();
         if (!string.IsNullOrWhiteSpace(connectString))
         {

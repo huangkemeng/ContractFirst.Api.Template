@@ -1,14 +1,11 @@
-﻿using ContractFirst.Api.FilterAndMiddlewares;
+﻿using ContractFirst.Api.Engines.Bases;
 using Mediator.Net;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ContractFirst.Api.Controllers.Bases;
 
 [ApiController]
-[Authorize]
-[TypeFilter(typeof(AutoResolveFilter))]
-[TypeFilter(typeof(HandleTimezoneResultFilter))]
+[Route("api/[controller]")]
 public class BaseController : ControllerBase
 {
     [AutoResolve] public IMediator Mediator { get; set; }

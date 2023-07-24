@@ -1,21 +1,22 @@
 ﻿using ContractFirst.Api.Engines.Bases;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
 
 namespace ContractFirst.Api.Engines.SwaggerEngines;
 
 public class UseSwagger : IAppEngine
 {
     private readonly WebApplication app;
+    private readonly EngineBuilderOptions builderOptions;
 
-    public UseSwagger(WebApplication app)
+    public UseSwagger(WebApplication app, EngineBuilderOptions builderOptions)
     {
         this.app = app;
+        this.builderOptions = builderOptions;
     }
 
     public void Run()
     {
-        if (!app.Environment.IsProduction())
+        if (builderOptions.EnableSwagger)
         {
             app.UseSwagger();
             app.UseSwaggerUI(options =>
@@ -27,7 +28,8 @@ public class UseSwagger : IAppEngine
                     options.SwaggerEndpoint($"/swagger/{f.Name}/swagger.json",
                         (info != null ? info.Title : f.Name) + "-" + app.Environment.EnvironmentName);
                 });
-                options.SwaggerEndpoint("/swagger/Other/swagger.json", "其他" + "-" + app.Environment.EnvironmentName);
+                options.SwaggerEndpoint("/swagger/Ungrouped/swagger.json",
+                    "ContractFirst.Api" + "-" + app.Environment.EnvironmentName);
             });
         }
     }

@@ -21,16 +21,44 @@ namespace ContractFirst.Api.Engines.ConventionEngines;
 public class ConfigureConvention : IBuilderEngine
 {
     private readonly IServiceCollection services;
+    private readonly EngineBuilderOptions builderOptions;
 
-    public ConfigureConvention(IServiceCollection services)
+    public ConfigureConvention(IServiceCollection services, EngineBuilderOptions builderOptions)
     {
         this.services = services;
+        this.builderOptions = builderOptions;
     }
 
     public void Run()
     {
-        AddCors();
-        AddJwt();
+        services.AddControllers(options =>
+        {
+            if (builderOptions.EnableTimezoneHandler)
+            {
+                options.Filters.Add<HandleTimezoneResultFilter>();
+            }
+
+            if (builderOptions.EnableAutoResolve)
+            {
+                options.Filters.Add<AutoResolveFilter>();
+            }
+            
+            if (builderOptions.EnableGlobalExceptionFilter)
+            {
+                options.Filters.Add<GlobalExceptionFilter>();
+            }
+        });
+        services.AddEndpointsApiExplorer();
+        services.AddHttpContextAccessor();
+        if (builderOptions.EnableCors)
+        {
+            AddCors();
+        }
+
+        if (builderOptions.EnableJwt)
+        {
+            AddJwt();
+        }
     }
 
     private void AddCors()
@@ -102,22 +130,32 @@ public class ConfigureConvention : IBuilderEngine
 public class UseConvention : IAppEngine
 {
     private readonly WebApplication app;
+    private readonly EngineBuilderOptions builderOptions;
 
-    public UseConvention(WebApplication app)
+    public UseConvention(WebApplication app, EngineBuilderOptions builderOptions)
     {
         this.app = app;
+        this.builderOptions = builderOptions;
     }
 
     public void Run()
     {
-        app.Use((context, next) =>
+        if (builderOptions.EnableCors)
         {
-            context.Response.Headers.Add("Access-Control-Expose-Headers", "www-authenticate");
-            return next();
-        });
-        app.UseCors();
-        app.UseAuthentication();
-        app.UseAuthorization();
+            app.UseCors();
+        }
+
+        if (builderOptions.EnableJwt)
+        {
+            app.Use((context, next) =>
+            {
+                context.Response.Headers.Add("Access-Control-Expose-Headers", "www-authenticate");
+                return next();
+            });
+            app.UseAuthentication();
+            app.UseAuthorization();
+        }
+
         ValidatorOptions.Global.LanguageManager.Enabled = true;
         ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("zh-CN");
     }

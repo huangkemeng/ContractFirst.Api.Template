@@ -34,8 +34,8 @@ public class DoValidatePipe : IPipeSpecification<IReceiveContext<IMessage>>
             if (context.Message != null)
             {
                 var msgType = context.Message.GetType();
-                var ivalidatorType = typeof(IValidator<>).MakeGenericType(msgType);
-                if (lifetimeScope.Resolve(ivalidatorType) is IValidator validator &&
+                var iValidatorType = typeof(IValidator<>).MakeGenericType(msgType);
+                if (lifetimeScope.Resolve(iValidatorType) is IValidator validator &&
                     validator.CanValidateInstancesOfType(msgType))
                 {
                     var result = await validator.ValidateAsync(new ContractValidationContext(context.Message),

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace ContractFirst.Api.FilterAndMiddlewares;
+namespace ContractFirst.Api.Engines.Bases;
 
 public class AutoResolveFilter : IAsyncActionFilter
 {

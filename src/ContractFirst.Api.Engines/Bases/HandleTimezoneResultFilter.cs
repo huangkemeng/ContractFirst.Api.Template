@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json.Linq;
 
-namespace ContractFirst.Api.FilterAndMiddlewares;
+namespace ContractFirst.Api.Engines.Bases;
 
 public class HandleTimezoneResultFilter : IResultFilter
 {
@@ -28,9 +28,9 @@ public class HandleTimezoneResultFilter : IResultFilter
             var name = $"utc{timezoneOffset / 60.0:+#;-#;0}";
             var timeZoneInfo =
                 TimeZoneInfo.CreateCustomTimeZone(name, TimeSpan.FromMinutes(timezoneOffset), name, name);
-            var jToken = JToken.FromObject(value!);
+            var jToken = JToken.FromObject(value);
             UpdateDateTimeToSpecificTimezone(jToken, timeZoneInfo);
-            return jToken.ToObject(value!.GetType());
+            return jToken.ToObject(value.GetType());
         }
 
         return null;

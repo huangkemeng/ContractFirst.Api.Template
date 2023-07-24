@@ -20,10 +20,12 @@ namespace ContractFirst.Api.Engines.MediatorEngines;
 public class RegisterMediator : IBuilderEngine
 {
     private readonly ContainerBuilder builder;
+    private readonly EngineBuilderOptions builderOptions;
 
-    public RegisterMediator(ContainerBuilder builder)
+    public RegisterMediator(ContainerBuilder builder, EngineBuilderOptions builderOptions)
     {
         this.builder = builder;
+        this.builderOptions = builderOptions;
     }
 
     public void Run()
@@ -31,25 +33,38 @@ public class RegisterMediator : IBuilderEngine
         var mediatorBuilder = new MediatorBuilder();
         var realizationAssembly = typeof(IRealization).Assembly;
         var iContractType = typeof(IContract<>);
-        var contractTypes = iContractType.Assembly?
+        var contractTypes = iContractType.Assembly
             .ExportedTypes
-            .Where(x => x.GetInterfaces().Any(e => e.IsGenericType && e.GetGenericTypeDefinition() == iContractType) &&
-                        x.IsInterface && !x.IsGenericType)
+            .Where(x =>
+                x.GetInterfaces().Any(e => e.IsGenericType && e.GetGenericTypeDefinition() == iContractType) &&
+                x is { IsInterface: true, IsGenericType: false })
             .ToArray();
 
-        var realizationTypes = realizationAssembly?
+        var realizationTypes = realizationAssembly
             .ExportedTypes
-            .Where(e => e.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == iContractType) &&
-                        e.IsClass && !e.IsAbstract)
+            .Where(e =>
+                e.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == iContractType) &&
+                e is { IsClass: true, IsAbstract: false })
             .ToArray();
-        builder.RegisterType<DoValidatePipe>()
-            .AsSelf()
-            .InstancePerLifetimeScope();
-        builder.RegisterType<EfCorePipe>()
-            .AsSelf()
-            .InstancePerLifetimeScope();
+
+        if (builderOptions.EnableValidator)
+        {
+            builder
+                .RegisterType<DoValidatePipe>()
+                .AsSelf()
+                .InstancePerLifetimeScope();
+        }
+
+        if (builderOptions.EnableEfCore)
+        {
+            builder
+                .RegisterType<EfCorePipe>()
+                .AsSelf()
+                .InstancePerLifetimeScope();
+        }
+
         List<SyntaxTree> trees = new();
-        if (contractTypes != null && contractTypes.Any())
+        if (contractTypes is { Length: > 0 })
         {
             var messageBindings = new List<MessageBinding>();
             foreach (var contractType in contractTypes)
@@ -57,54 +72,63 @@ public class RegisterMediator : IBuilderEngine
                 var realizationType = realizationTypes?.FirstOrDefault(contractType.IsAssignableFrom);
                 if (realizationType != null)
                 {
-                    var handler = realizationType.GetMethod("Handle");
+                    var handler = realizationType.GetMethod(nameof(ICommandContract<ICommand>.Handle));
                     if (handler != null)
                     {
                         var msgType = handler.GetParameters()[0].ParameterType.GenericTypeArguments[0];
                         messageBindings.Add(new MessageBinding(msgType, realizationType));
-                        var validatorMethod = realizationType.GetMethod("Validator");
+                        var validatorMethod = realizationType.GetMethod(nameof(IContract<IMessage>.Validator));
                         if (validatorMethod != null)
+                        {
                             builder.Register(context =>
                                 {
                                     var ret =
                                         Activator.CreateInstance(validatorMethod.GetParameters()[0].ParameterType)!;
                                     var realizationObj = context.Resolve(realizationType);
-                                    validatorMethod?.Invoke(realizationObj, new[] { ret });
+                                    validatorMethod.Invoke(realizationObj, new[] { ret });
                                     return ret;
                                 })
                                 .As(typeof(IValidator<>).MakeGenericType(msgType))
                                 .InstancePerDependency();
+                        }
                     }
                 }
-                else
+                else if (builderOptions.EnableFakerRealization)
                 {
                     var syntaxTree = GetSyntaxTree(contractType);
-                    if (syntaxTree != null) trees.Add(syntaxTree);
+                    if (syntaxTree != null)
+                    {
+                        trees.Add(syntaxTree);
+                    }
                 }
             }
 
-            var fakerAssembly = GetFakerAssembly(trees);
-            if (fakerAssembly != null)
+            if (builderOptions.EnableFakerRealization)
             {
-                var handlerTypes = fakerAssembly.ExportedTypes;
-                foreach (var handlerType in handlerTypes)
+                var fakerAssembly = GetFakerAssembly(trees);
+                if (fakerAssembly != null)
                 {
-                    var contractType = handlerType.GetInterfaces().FirstOrDefault();
-                    if (contractType != null)
+                    var handlerTypes = fakerAssembly.ExportedTypes;
+                    foreach (var handlerType in handlerTypes)
                     {
-                        var iHandlerType = GetContractInputAndOutputType(contractType);
-                        if (iHandlerType != null)
+                        var contractType = handlerType.GetInterfaces().FirstOrDefault();
+                        if (contractType != null)
                         {
-                            messageBindings.Add(new MessageBinding(iHandlerType.GenericTypeArguments[0], handlerType));
-                            var validatorType =
-                                typeof(ContractValidator<>).MakeGenericType(iHandlerType.GenericTypeArguments[0]);
-                            builder.Register(context =>
-                                {
-                                    var command = Activator.CreateInstance(validatorType)!;
-                                    return command;
-                                })
-                                .As(typeof(IValidator<>).MakeGenericType(iHandlerType.GenericTypeArguments[0]))
-                                .InstancePerDependency();
+                            var iHandlerType = GetContractInputAndOutputType(contractType);
+                            if (iHandlerType != null)
+                            {
+                                messageBindings.Add(new MessageBinding(iHandlerType.GenericTypeArguments[0],
+                                    handlerType));
+                                var validatorType =
+                                    typeof(ContractValidator<>).MakeGenericType(iHandlerType.GenericTypeArguments[0]);
+                                builder.Register(_ =>
+                                    {
+                                        var command = Activator.CreateInstance(validatorType)!;
+                                        return command;
+                                    })
+                                    .As(typeof(IValidator<>).MakeGenericType(iHandlerType.GenericTypeArguments[0]))
+                                    .InstancePerDependency();
+                            }
                         }
                     }
                 }
@@ -113,10 +137,17 @@ public class RegisterMediator : IBuilderEngine
             mediatorBuilder.RegisterHandlers(() => messageBindings);
             mediatorBuilder.ConfigureGlobalReceivePipe(c =>
             {
-                var doValidatePipe = c.DependencyScope.Resolve<DoValidatePipe>();
-                var efCorePipe = c.DependencyScope.Resolve<EfCorePipe>();
-                c.AddPipeSpecification(doValidatePipe);
-                c.AddPipeSpecification(efCorePipe);
+                if (builderOptions.EnableValidator)
+                {
+                    var doValidatePipe = c.DependencyScope.Resolve<DoValidatePipe>();
+                    c.AddPipeSpecification(doValidatePipe);
+                }
+
+                if (builderOptions.EnableEfCore)
+                {
+                    var efCorePipe = c.DependencyScope.Resolve<EfCorePipe>();
+                    c.AddPipeSpecification(efCorePipe);
+                }
             });
         }
 

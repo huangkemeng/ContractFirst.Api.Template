@@ -16,14 +16,14 @@ public class RegisterSettings : IBuilderEngine
 
     public void Run()
     {
-        var isettingType = typeof(ISetting);
-        var infrastructureAssembly = isettingType.Assembly;
+        var iSettingType = typeof(ISetting);
+        var infrastructureAssembly = iSettingType.Assembly;
         var settingTypes = infrastructureAssembly
             ?.ExportedTypes
-            .Where(e => e.GetInterfaces().Contains(isettingType) && e.IsClass && !e.IsAbstract)
+            .Where(e => e.GetInterfaces().Contains(iSettingType) && e.IsClass && !e.IsAbstract)
             .ToArray();
         var basePath = AppContext.BaseDirectory;
-        IConfigurationBuilder appsettingConfigurationBuilder = new ConfigurationBuilder();
+        IConfigurationBuilder appConfigurationBuilder = new ConfigurationBuilder();
         if (settingTypes != null)
             foreach (var settingType in settingTypes)
             {
@@ -34,7 +34,7 @@ public class RegisterSettings : IBuilderEngine
                     var path = Path.Combine(basePath, jsonFileSetting.JsonFilePath);
                     if (!string.IsNullOrWhiteSpace(jsonFileSetting.JsonFilePath)
                         && File.Exists(path))
-                        appsettingConfigurationBuilder.AddJsonFile(path, false);
+                        appConfigurationBuilder.AddJsonFile(path, false);
                 }
                 else if (setting is IStringSetting stringSetting)
                 {
@@ -43,10 +43,10 @@ public class RegisterSettings : IBuilderEngine
             }
 
         if (File.Exists(Path.Combine(basePath, "appsettings.json")))
-            appsettingConfigurationBuilder
+            appConfigurationBuilder
                 .AddJsonFile(Path.Combine(basePath, "appsettings.json"), false);
         ;
-        var configuration = appsettingConfigurationBuilder
+        var configuration = appConfigurationBuilder
             .AddEnvironmentVariables()
             .Build();
         services.AddSingleton(configuration);

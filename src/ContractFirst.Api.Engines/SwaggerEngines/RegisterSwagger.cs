@@ -8,13 +8,23 @@ namespace ContractFirst.Api.Engines.SwaggerEngines;
 public class RegisterSwagger : IBuilderEngine
 {
     private readonly IServiceCollection services;
+    private readonly EngineBuilderOptions builderOptions;
 
-    public RegisterSwagger(IServiceCollection services)
+    public RegisterSwagger(IServiceCollection services, EngineBuilderOptions builderOptions)
     {
         this.services = services;
+        this.builderOptions = builderOptions;
     }
 
     public void Run()
+    {
+        if (builderOptions.EnableSwagger)
+        {
+            AddSwagger();
+        }
+    }
+
+    private void AddSwagger()
     {
         services.AddSwaggerGen(options =>
         {

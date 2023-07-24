@@ -1,11 +1,19 @@
 using ContractFirst.Api.Engines.Bases;
-using ContractFirst.Api.FilterAndMiddlewares;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers(options => { options.Filters.Add<GlobalExceptionFilter>(); });
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHttpContextAccessor();
-var app = builder.BuildWithEngines();
+var app = builder
+    .BuildWithEngines(options =>
+    {
+        options.EnableSwagger = true;
+        options.EnableFakerRealization = true;
+        options.EnableAutoResolve = true;
+        options.EnableEfCore = false;
+        options.EnableGlobalExceptionFilter = false;
+        options.EnableTimezoneHandler = false;
+        options.EnableValidator = false;
+        options.EnableCors = false;
+        options.EnableJwt = false;
+    });
 app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();

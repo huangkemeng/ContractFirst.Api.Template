@@ -10,13 +10,23 @@ namespace ContractFirst.Api.Engines.EfCoreEngines;
 public class RegisterEntityEvents : IBuilderEngine
 {
     private readonly ContainerBuilder containerBuilder;
+    private readonly EngineBuilderOptions builderOptions;
 
-    public RegisterEntityEvents(ContainerBuilder containerBuilder)
+    public RegisterEntityEvents(ContainerBuilder containerBuilder, EngineBuilderOptions builderOptions)
     {
         this.containerBuilder = containerBuilder;
+        this.builderOptions = builderOptions;
     }
 
     public void Run()
+    {
+        if (builderOptions.EnableEfCore)
+        {
+            AddEntityEvents();
+        }
+    }
+
+    private void AddEntityEvents()
     {
         var type = typeof(IHasEntityEvent<>);
         var iMainType = typeof(IMainEntity);

@@ -8,34 +8,32 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <CodeAnalysisRuleSet/>
+        <CodeAnalysisRuleSet />
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <CodeAnalysisRuleSet/>
+        <CodeAnalysisRuleSet />
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CodeAnalyzer" Version="0.0.3"/>
-        <PackageReference Include="FluentValidation" Version="11.5.2"/>
-        <PackageReference Include="Mediator.Net" Version="4.7.0"/>
+        <PackageReference Include="CodeAnalyzer" Version="0.0.3" />
+        <PackageReference Include="FluentValidation" Version="11.5.2" />
+        <PackageReference Include="Mediator.Net" Version="4.7.0" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.5"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.5" />
     </ItemGroup>
 
     <ItemGroup>
-        <EditorConfigFiles Remove="D:\MyJobs\ContractFirst.Api\src\ContractFirst.Api.Primary\.editorconfig"/>
+        <EditorConfigFiles Remove="D:\MyJobs\ContractFirst.Api\src\ContractFirst.Api.Primary\.editorconfig" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src.analyzers\ContractFirst.Api.CodeAnalyzer\ContractFirst.Api.CodeAnalyzer.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\..\src.analyzers\ContractFirst.Api.CodeAnalyzer\ContractFirst.Api.CodeAnalyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
 </Project>

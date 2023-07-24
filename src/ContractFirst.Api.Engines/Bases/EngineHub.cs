@@ -8,9 +8,11 @@ namespace ContractFirst.Api.Engines.Bases;
 public static class EngineHub
 {
     public static WebApplication BuildWithEngines(this WebApplicationBuilder builder,
-        Action<BuildEngineOptions>? options = null)
+        Action<EngineBuilderOptions>? configureOptions = null)
     {
-        BuildEngineOptions buildEngineOptions = new BuildEngineOptions();
+        EngineBuilderOptions engineBuilderOptions = new EngineBuilderOptions();
+        configureOptions?.Invoke(engineBuilderOptions);
+        builder.Services.AddSingleton(engineBuilderOptions);
         WebApplication? app = null;
         builder.RegisterEngines();
         builder.StartBuilderEngines();
