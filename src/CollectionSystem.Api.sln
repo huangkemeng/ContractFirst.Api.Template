@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CollectionSystem.Api.CodeAn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CollectionSystem.Api.CodeAnalyzer.Tests", "..\src.analyzers\CollectionSystem.Api.CodeAnalyzers.Tests\CollectionSystem.Api.CodeAnalyzer.Tests.csproj", "{2C95157E-F935-4F5E-A702-6DBC4DEE29CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Collectionsystem.Api.CodeGenerator", "..\src.analyzers\Collectionsystem.Api.CodeGenerator\Collectionsystem.Api.CodeGenerator.csproj", "{E94D8912-548A-46B0-A78C-7D49E78F2738}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CollectionSystem1.Api.CodeGenerator", "..\src.analyzers\CollectionSystem1.Api.CodeGenerator\CollectionSystem1.Api.CodeGenerator.csproj", "{E94D8912-548A-46B0-A78C-7D49E78F2738}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

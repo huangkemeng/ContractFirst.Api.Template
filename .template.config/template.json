@@ -4,7 +4,9 @@
   "classifications": [
     "template",
     "solution",
-    "architecture"
+    "architecture",
+    "project",
+    "ContractFirst"
   ],
   "identity": "ContractFirst.Api",
   "groupIdentity": "ContractFirst.Api.Group",
@@ -15,5 +17,20 @@
   "tags": {
     "language": "C#",
     "type": "project"
-  }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            "**/bin/**",
+            "**/obj/**",
+            "**/.vs/**",
+            "**/.git/**",
+            "**/.idea/**"
+          ]
+        }
+      ]
+    }
+  ]
 }
