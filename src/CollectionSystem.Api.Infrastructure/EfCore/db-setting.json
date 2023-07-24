@@ -1,5 +1,0 @@
-{
-  "DbSetting": {
-    "ConnectionString": "Server=mssql-server;Database=CollectionSystem;User Id=cs;Password=sjD6gbGvrhbAeRQNNZg3Kmfood;Encrypt=True;TrustServerCertificate=true;"
-  }
-}

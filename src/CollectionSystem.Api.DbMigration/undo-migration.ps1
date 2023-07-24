@@ -1,1 +1,0 @@
-﻿dotnet ef migrations remove --project ../CollectionSystem.Api.Infrastructure

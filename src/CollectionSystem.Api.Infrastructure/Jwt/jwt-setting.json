@@ -1,9 +1,0 @@
-{
-  "JwtSetting": {
-    "Issuer": "HuaDing",
-    "SignKey": "sj7w6kmuyPHcx440J4kkxyfood",
-    "Audience": "SurveyRespondents",
-    "LongExpiresInMinutes": 43200,
-    "ShortExpiresInMinutes": 1440
-  }
-}

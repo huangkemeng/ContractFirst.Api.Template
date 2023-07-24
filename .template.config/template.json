@@ -12,7 +12,7 @@
   "groupIdentity": "ContractFirst.Api.Group",
   "name": "Contract First API Template",
   "shortName": "ContractFirst",
-  "sourceName": "CollectionSystem.Api",
+  "sourceName": "ContractFirst.Api",
   "preferNameDirectory": true,
   "tags": {
     "language": "C#",
@@ -27,7 +27,8 @@
             "**/obj/**",
             "**/.vs/**",
             "**/.git/**",
-            "**/.idea/**"
+            "**/.idea/**",
+            "global.json"
           ]
         }
       ]
