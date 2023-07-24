@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "MATT.H",
+  "classifications": [
+    "template",
+    "solution",
+    "architecture"
+  ],
+  "identity": "ContractFirst.Api",
+  "groupIdentity": "ContractFirst.Api.Group",
+  "name": "Contract First API Template",
+  "shortName": "ContractFirst",
+  "sourceName": "CollectionSystem.Api",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}
