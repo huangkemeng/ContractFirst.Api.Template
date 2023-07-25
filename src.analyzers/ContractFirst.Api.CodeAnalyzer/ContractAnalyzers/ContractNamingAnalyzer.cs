@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace ContractFirst.Api.CodeAnalyzer.ContractAnalyzer;
+namespace ContractFirst.Api.CodeAnalyzer.ContractAnalyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class ContractNamingAnalyzer : DiagnosticAnalyzer
@@ -17,7 +17,7 @@ public class ContractNamingAnalyzer : DiagnosticAnalyzer
     private static readonly DiagnosticDescriptor ContractNamingRule = new(ContractNamingDiagnosticId,
         "ContractNamingAnalyzer", "继承IContract<T>的接口必须以Contract结尾", "Naming", DiagnosticSeverity.Error, true);
 
-    public readonly Regex contractMatchRegex = new(@"\.Bases.IContract\<[0-9a-zA-Z_\.]+\>$");
+    private readonly Regex contractMatchRegex = new(@"\.Bases.IContract\<[0-9a-zA-Z_\.]+\>$");
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(ContractNamingRule);
@@ -50,15 +50,19 @@ public class ContractNamingAnalyzer : DiagnosticAnalyzer
 
     private bool HasIContractType(IEnumerable<ISymbol> symbols)
     {
-        if (symbols != null && symbols.Any())
-            foreach (var symbol in symbols)
+        var symbolArray = symbols.ToArray();
+        if (symbolArray is { Length: > 0 })
+        {
+            foreach (var symbol in symbolArray)
+            {
                 if (symbol is ITypeSymbol typeSymbol)
                 {
                     var match = contractMatchRegex.Match(typeSymbol.ToDisplayString());
                     if (match.Success) return true;
                     return HasIContractType(typeSymbol.Interfaces);
                 }
-
+            }
+        }
         return false;
     }
 }

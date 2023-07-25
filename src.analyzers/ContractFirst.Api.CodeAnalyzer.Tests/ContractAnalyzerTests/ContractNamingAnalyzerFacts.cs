@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using ContractFirst.Api.CodeAnalyzer.ContractAnalyzer;
+using ContractFirst.Api.CodeAnalyzer.ContractAnalyzers;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Xunit;

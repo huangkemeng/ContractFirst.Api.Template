@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace ContractFirst.Api.CodeAnalyzer.ContractAnalyzer;
+namespace ContractFirst.Api.CodeAnalyzer.ContractAnalyzers;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ContractNamingFixProvider))]
 [Shared]
