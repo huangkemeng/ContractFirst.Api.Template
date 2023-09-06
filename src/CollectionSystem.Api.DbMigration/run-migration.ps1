@@ -1,1 +1,0 @@
-﻿dotnet ef database update --project ../CollectionSystem.Api.Infrastructure

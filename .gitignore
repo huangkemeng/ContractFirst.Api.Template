@@ -364,3 +364,8 @@
 
 # !NuGet Packages
 !src/local-packages/*.nupkg
+src/.idea/.idea.ContractFirst.Api/.idea/.name
+src/.idea/.idea.ContractFirst.Api/.idea/indexLayout.xml
+src/.idea/.idea.ContractFirst.Api/.idea/projectSettingsUpdater.xml
+src/.idea/.idea.ContractFirst.Api/.idea/vcs.xml
+src/.idea/.idea.ContractFirst.Api/.idea/workspace.xml
