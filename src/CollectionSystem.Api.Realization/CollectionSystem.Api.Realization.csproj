@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AutoBogus" Version="2.13.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
+		<PackageReference Include="MockQueryable.NSubstitute" Version="7.0.0" />
+		<PackageReference Include="NSubstitute" Version="5.0.0" />
+		<PackageReference Include="Shouldly" Version="4.2.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\CollectionSystem.Api.Infrastructure\CollectionSystem.Api.Infrastructure.csproj" />
+		<ProjectReference Include="..\CollectionSystem.Api.Primary\CollectionSystem.Api.Primary.csproj" />
+	</ItemGroup>
+
+</Project>
