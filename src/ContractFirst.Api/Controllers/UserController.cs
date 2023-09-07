@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ContractFirst.Api.Controllers;
 
-public class User : WebBaseController
+public class UserController : WebBaseController
 {
     /// <summary>
     /// 用户登录
