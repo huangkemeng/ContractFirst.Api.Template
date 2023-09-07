@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ContractFirst.Api.Controllers.Bases;
 
 [ApiController]
-[Authorize]
+// [Authorize]
 [TypeFilter(typeof(AutoResolveFilter))]
 [TypeFilter(typeof(HandleTimezoneResultFilter))]
 public class BaseController : ControllerBase

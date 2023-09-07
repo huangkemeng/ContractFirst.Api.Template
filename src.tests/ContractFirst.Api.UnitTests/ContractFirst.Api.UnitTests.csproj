@@ -27,4 +27,11 @@
       <ProjectReference Include="..\..\src\ContractFirst.Api.Realization\ContractFirst.Api.Realization.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="xunit.runner.json" />
+      <Content Include="xunit.runner.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>

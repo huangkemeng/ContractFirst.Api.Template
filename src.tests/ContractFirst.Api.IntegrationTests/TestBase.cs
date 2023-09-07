@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using System;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Autofac;
 using ContractFirst.Api.Engines.Bases;
 using ContractFirst.Api.Infrastructure.EfCore;
@@ -19,16 +22,23 @@ public class TestBase : IClassFixture<SequentialCollectionFixture>, IAsyncDispos
         Build();
     }
 
-    protected IContainer TestServices { get; private set; }
+    protected ILifetimeScope TestLifetimeScope { get; private set; }
     protected IMediator TestMediator { get; private set; }
     protected SqlDbContext TestDbContext { get; private set; }
 
     protected void Build(Action<ContainerBuilder>? builderAction = null)
     {
-        var builder = new ContainerBuilder();
-        TestServices = builder.TestBuildWithEngines(builderAction);
-        TestMediator = TestServices.Resolve<IMediator>();
-        TestDbContext = TestServices.Resolve<SqlDbContext>();
+        if (TestEnvironmentCache.LifetimeScope == null)
+        {
+            var builder = new ContainerBuilder();
+            TestEnvironmentCache.LifetimeScope = builder.TestBuildWithEngines(builderAction);
+        }
+
+        TestLifetimeScope = builderAction != null
+            ? TestEnvironmentCache.LifetimeScope.BeginLifetimeScope(builderAction)
+            : TestEnvironmentCache.LifetimeScope;
+        TestMediator = TestLifetimeScope.Resolve<IMediator>();
+        TestDbContext = TestLifetimeScope.Resolve<SqlDbContext>();
     }
 
     public ValueTask DisposeAsync()
@@ -39,7 +49,7 @@ public class TestBase : IClassFixture<SequentialCollectionFixture>, IAsyncDispos
 
     private async Task<SqlDbContext?> CheckDbConnect()
     {
-        var dbContext = TestServices.Resolve<SqlDbContext>();
+        var dbContext = TestLifetimeScope.Resolve<SqlDbContext>();
         // 为了区分mock的和非mock的
         if (dbContext.GetType().FullName!.Contains("ContractFirst.Api"))
         {
@@ -80,7 +90,11 @@ END";
 
     protected async Task StartupInfrastructure()
     {
-        await StartupSqlDb();
+        if (!TestEnvironmentCache.IsInfrastructureStarted)
+        {
+            await StartupSqlDb();
+            TestEnvironmentCache.IsInfrastructureStarted = true;
+        }
     }
 
     private async Task StartupSqlDb()
@@ -119,7 +133,7 @@ END";
 
     private IMongoDatabase? CheckMongoDbConnection()
     {
-        var mongoDbContext = TestServices.Resolve<MongoDbContext>();
+        var mongoDbContext = TestLifetimeScope.Resolve<MongoDbContext>();
 
         if (mongoDbContext is { Database: not null })
         {
@@ -150,7 +164,7 @@ END";
 
     public void Dispose()
     {
-        TestServices.Dispose();
+        TestLifetimeScope.Dispose();
         TestMediator.Dispose();
         TestDbContext.Dispose();
     }

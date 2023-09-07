@@ -6,9 +6,14 @@ namespace ContractFirst.Api.Primary.Contracts.Bases;
 
 public interface ITestContext
 {
-    IContainer Container { get; set; }
+    ILifetimeScope LifetimeScope { get; set; }
     DbContext DbContext { get; set; }
     IMediator Mediator { get; set; }
+    
+    /// <summary>
+    /// 是否不需要数据库
+    /// </summary>
+    public bool NoDatabase { get; set; }
 }
 
 public class TestContext<TMessage> : ITestContext
@@ -27,9 +32,10 @@ public class TestContext<TMessage> : ITestContext
         return newCase;
     }
 
-    public IContainer Container { get; set; }
+    public ILifetimeScope LifetimeScope { get; set; }
     public DbContext DbContext { get; set; }
     public IMediator Mediator { get; set; }
+    public bool NoDatabase { get; set; }
 }
 
 public class TestContext<TMessage, TResponse> : ITestContext
@@ -39,9 +45,11 @@ public class TestContext<TMessage, TResponse> : ITestContext
         TestCases = new List<TestCase<TMessage, TResponse>>();
     }
 
-    public IContainer Container { get; set; }
+    public ILifetimeScope LifetimeScope { get; set; }
     public DbContext DbContext { get; set; }
     public IMediator Mediator { get; set; }
+    
+    public bool NoDatabase { get; set; }
     public List<TestCase<TMessage, TResponse>> TestCases { get; }
 
     public TestCase<TMessage, TResponse> CreateTestCase()
@@ -86,4 +94,5 @@ public class TestCase<TMessage, TResponse> : ITestCase
     public Func<Task>? Arrange { get; set; }
     public Func<HandlerResult<TResponse>, Task>? Assert { get; set; }
     public bool DatabaseCleanupRequired { get; set; }
+
 }
