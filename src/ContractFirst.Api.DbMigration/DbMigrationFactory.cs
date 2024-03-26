@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using ContractFirst.Api.Engines.Bases;
 using ContractFirst.Api.Infrastructure.Bases;
-using ContractFirst.Api.Infrastructure.EfCore;
+using ContractFirst.Api.Infrastructure.DataPersistence.EfCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace ContractFirst.Api.DbMigration;

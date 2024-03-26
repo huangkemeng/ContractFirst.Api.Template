@@ -1,17 +1,15 @@
-﻿using ContractFirst.Api.Primary.Entities.Bases;
-
-namespace ContractFirst.Api.Realization.Bases;
+﻿namespace ContractFirst.Api.Realization.Bases;
 
 public static class EntityExtensions
 {
-    public static T Faker<T>(this T eneity, Action<T>? action = null) where T : class
+    public static T Faker<T>(this T entity, Action<T>? action = null) where T : class
     {
-        eneity = BusinessFaker<T>.Create();
-        action?.Invoke(eneity);
-        return eneity;
+        var nweEntity = BusinessFaker<T>.Create();
+        action?.Invoke(nweEntity);
+        return nweEntity;
     }
 
-    public static List<T> Faker<T>(this T eneity, int number, Action<T, int>? action = null)
+    public static List<T> Faker<T>(this T entity, int number, Action<T, int>? action = null)
         where T : class
     {
         var entities = BusinessFaker<T>.Create(number);
@@ -23,9 +21,9 @@ public static class EntityExtensions
         return entities;
     }
 
-    public static List<T> Faker<T>(this T eneity, int number, Action<T> action)
+    public static List<T> Faker<T>(this T entity, int number, Action<T> action)
         where T : class
     {
-        return eneity.Faker(number, (obj, _) => action.Invoke(obj));
+        return entity.Faker(number, (obj, _) => action.Invoke(obj));
     }
 }

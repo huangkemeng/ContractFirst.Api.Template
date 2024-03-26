@@ -1,7 +1,6 @@
 ﻿namespace ContractFirst.Api.Primary.Bases;
 
-public interface ICurrent<TEntity>
+public interface ICurrent
 {
-    Task<TEntity?> QueryAsync(CancellationToken cancellationToken = default);
-    Task<Guid?> GetCurrentUserIdAsync();
+    Task<Guid> GetCurrentUserIdAsync();
 }

@@ -88,6 +88,7 @@ public class RegisterSwagger : IBuilderEngine
             options.IncludeXmlComments(Path.Combine(basePath, "ContractFirst.Api.Primary.xml"), true);
             options.IncludeXmlComments(Path.Combine(basePath, "ContractFirst.Api.Infrastructure.xml"), true);
             options.SchemaFilter<DisplayEnumDescFilter>();
+            options.OperationFilter<SetDefaultOperationIdFilter>();
         });
     }
 }

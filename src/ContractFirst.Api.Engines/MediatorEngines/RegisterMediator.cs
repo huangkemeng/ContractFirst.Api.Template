@@ -35,7 +35,7 @@ public class RegisterMediator : IBuilderEngine
             .ExportedTypes
             .Where(x =>
                 x.GetInterfaces().Any(e => e.IsGenericType && e.GetGenericTypeDefinition() == iContractType) &&
-                x.IsInterface && !x.IsGenericType)
+                x is { IsInterface: true, IsGenericType: false })
             .ToArray();
 
         var realizationTypes = realizationAssembly?

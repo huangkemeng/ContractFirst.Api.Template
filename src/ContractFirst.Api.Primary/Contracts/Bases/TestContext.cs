@@ -1,15 +1,15 @@
 ﻿using Autofac;
+using ContractFirst.Api.Infrastructure.DataPersistence.EfCore.Entities;
 using Mediator.Net;
 using Microsoft.EntityFrameworkCore;
 
 namespace ContractFirst.Api.Primary.Contracts.Bases;
-
 public interface ITestContext
 {
     ILifetimeScope LifetimeScope { get; set; }
     DbContext DbContext { get; set; }
     IMediator Mediator { get; set; }
-    
+
     /// <summary>
     /// 是否不需要数据库
     /// </summary>
@@ -48,7 +48,7 @@ public class TestContext<TMessage, TResponse> : ITestContext
     public ILifetimeScope LifetimeScope { get; set; }
     public DbContext DbContext { get; set; }
     public IMediator Mediator { get; set; }
-    
+
     public bool NoDatabase { get; set; }
     public List<TestCase<TMessage, TResponse>> TestCases { get; }
 
@@ -65,7 +65,13 @@ public interface ITestCase
     /// <summary>
     /// 执行之前是否需要清理数据库
     /// </summary>
-    public bool DatabaseCleanupRequired { get; set; }
+    bool DatabaseCleanupRequired { get; set; }
+
+    ApplicationUser? CurrentUser { get; set; }
+
+    Action<ContainerBuilder>? Build { get; set; }
+
+    Func<Task>? Arrange { get; set; }
 }
 
 public class TestCase<TMessage> : ITestCase
@@ -75,6 +81,8 @@ public class TestCase<TMessage> : ITestCase
     public Func<Task>? Arrange { get; set; }
     public Func<HandlerResult, Task>? Assert { get; set; }
     public bool DatabaseCleanupRequired { get; set; }
+
+    public ApplicationUser? CurrentUser { get; set; }
 }
 
 public class HandlerResult
@@ -94,5 +102,5 @@ public class TestCase<TMessage, TResponse> : ITestCase
     public Func<Task>? Arrange { get; set; }
     public Func<HandlerResult<TResponse>, Task>? Assert { get; set; }
     public bool DatabaseCleanupRequired { get; set; }
-
+    public ApplicationUser? CurrentUser { get; set; }
 }

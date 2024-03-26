@@ -1,8 +1,8 @@
-﻿using ContractFirst.Api.FilterAndMiddlewares;
+﻿using ContractFirst.Api.Primary.Bases;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace ContractFirst.Api.Middlewares;
+namespace ContractFirst.Api.FilterAndMiddlewares;
 
 public class AutoResolveFilter : IAsyncActionFilter
 {
@@ -13,14 +13,18 @@ public class AutoResolveFilter : IAsyncActionFilter
         var type = controller.GetType();
         var typeProperties = type.GetProperties();
         foreach (var typeProperty in typeProperties)
+        {
             if (typeProperty.IsPubliclyWritable() && typeProperty.HasAttribute<AutoResolveAttribute>())
+            {
                 if (typeProperty.GetValue(controller) == null)
                 {
-                    var autoResolvePropertyValue =
-                        context.HttpContext.RequestServices.GetService(typeProperty.PropertyType);
-                    if (autoResolvePropertyValue != null) typeProperty.SetValue(controller, autoResolvePropertyValue);
+                    if (CurrentApplication.TryContextResolve(typeProperty.PropertyType, out var autoResolvePropertyValue))
+                    {
+                        typeProperty.SetValue(controller, autoResolvePropertyValue);
+                    }
                 }
-
+            }
+        }
         return next();
     }
 }

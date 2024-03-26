@@ -26,7 +26,7 @@ public class RegisterMarkedServices : IBuilderEngine
         foreach (var implementationType in types)
         {
             var asTypeFlag = implementationType.GetCustomAttribute<AsTypeAttribute>()!;
-            if (asTypeFlag.Types != null && asTypeFlag.Types.Any())
+            if (asTypeFlag is { Types: { Length: > 0 } })
             {
                 foreach (var baseType in asTypeFlag.Types)
                     AddService(services, asTypeFlag.Lifetime, baseType, implementationType);
@@ -34,12 +34,18 @@ public class RegisterMarkedServices : IBuilderEngine
             else
             {
                 var baseTypes = implementationType.GetInterfaces();
-                if (baseTypes != null && baseTypes.Any())
+                if (baseTypes is { Length: > 0 })
+                {
                     foreach (var baseType in baseTypes)
+                    {
                         AddService(services, asTypeFlag.Lifetime, baseType, implementationType);
+                    }
+                }
 
                 if (implementationType.BaseType != null)
+                {
                     AddService(services, asTypeFlag.Lifetime, implementationType.BaseType, implementationType);
+                }
 
                 AddService(services, asTypeFlag.Lifetime, implementationType, implementationType);
             }

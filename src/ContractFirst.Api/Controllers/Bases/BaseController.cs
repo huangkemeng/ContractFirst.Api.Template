@@ -1,5 +1,4 @@
 ﻿using ContractFirst.Api.FilterAndMiddlewares;
-using ContractFirst.Api.Middlewares;
 using Mediator.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

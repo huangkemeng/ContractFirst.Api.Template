@@ -1,32 +1,31 @@
 ﻿using Autofac;
 using ContractFirst.Api.Engines.Bases;
-using ContractFirst.Api.Infrastructure.EfCore;
-using ContractFirst.Api.Primary.Entities.Bases;
+using ContractFirst.Api.Infrastructure.DataPersistence.EfCore;
+using ContractFirst.Api.Infrastructure.DataPersistence.EfCore.Entities.Bases;
 using Microsoft.EntityFrameworkCore;
 
 namespace ContractFirst.Api.Engines.EfCoreEngines;
-
 public class RegisterDbSet : IBuilderEngine
 {
-    private readonly ContainerBuilder container;
+    private readonly ContainerBuilder _container;
 
     public RegisterDbSet(ContainerBuilder container)
     {
-        this.container = container;
+        _container = container;
     }
 
     public void Run()
     {
-        container.RegisterType<ApplicationDbContext>()
+        _container.RegisterType<ApplicationDbContext>()
             .AsSelf()
             .As<DbContext>()
             .InstancePerLifetimeScope();
-        var idbEntityType = typeof(IEfDbEntity<>);
+        var idbEntityType = typeof(IEfEntity<>);
         var idbEntityAssembly = idbEntityType.Assembly;
         var dbEntityTypes = idbEntityAssembly
             ?.ExportedTypes
             .Where(e => e.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == idbEntityType) &&
-                        e.IsClass && !e.IsAbstract)
+                        e is { IsClass: true, IsAbstract: false })
             .ToArray();
         if (dbEntityTypes != null && dbEntityTypes.Any())
         {
@@ -37,7 +36,7 @@ public class RegisterDbSet : IBuilderEngine
             {
                 var dbSettMethodGenericType = dbSetMethodType.MakeGenericMethod(dbEntityType);
                 var dbSetGenericType = dbSetType.MakeGenericType(dbEntityType);
-                container.Register(c =>
+                _container.Register(c =>
                     {
                         var dbContext = c.Resolve<ApplicationDbContext>();
                         return dbSettMethodGenericType.Invoke(dbContext, null);

@@ -1,6 +1,6 @@
 ﻿namespace ContractFirst.Api.Primary.Bases;
 
-public interface ICurrentMany<T> : ICurrent<T>
+public interface ICurrentMany<T> : ICurrent
 {
     Task<List<T>> QueryManyAsync(CancellationToken cancellationToken = default);
 }

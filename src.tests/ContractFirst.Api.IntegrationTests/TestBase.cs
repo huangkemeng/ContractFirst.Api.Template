@@ -1,16 +1,18 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using Autofac;
 using ContractFirst.Api.Engines.Bases;
-using ContractFirst.Api.Infrastructure.EfCore;
+using ContractFirst.Api.Infrastructure.DataPersistence.EfCore;
+using ContractFirst.Api.Infrastructure.DataPersistence.EfCore.Entities;
+using ContractFirst.Api.Infrastructure.DataPersistence.MongoDb;
 using ContractFirst.Api.Infrastructure.MongoDb;
+using ContractFirst.Api.Primary.Bases;
+using ContractFirst.Api.Primary.Contracts.Bases;
 using Mediator.Net;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MySqlConnector;
+using NSubstitute;
 
 namespace ContractFirst.Api.IntegrationTests;
 
@@ -26,19 +28,40 @@ public class TestBase : IClassFixture<SequentialCollectionFixture>, IAsyncDispos
     protected IMediator TestMediator { get; private set; }
     protected ApplicationDbContext TestDbContext { get; private set; }
 
-    protected void Build(Action<ContainerBuilder>? builderAction = null)
+    protected void Build(ITestCase? testCase = null)
     {
         if (TestEnvironmentCache.LifetimeScope == null)
         {
             var builder = new ContainerBuilder();
-            TestEnvironmentCache.LifetimeScope = builder.TestBuildWithEngines(builderAction);
+            TestEnvironmentCache.LifetimeScope = builder.TestBuildWithEngines(containerBuilder =>
+                BuildContainerByTestCase(testCase, containerBuilder));
         }
 
-        TestLifetimeScope = builderAction != null
-            ? TestEnvironmentCache.LifetimeScope.BeginLifetimeScope(builderAction)
-            : TestEnvironmentCache.LifetimeScope;
+        TestLifetimeScope = TestEnvironmentCache.LifetimeScope.BeginLifetimeScope(containerBuilder =>
+            BuildContainerByTestCase(testCase, containerBuilder));
         TestMediator = TestLifetimeScope.Resolve<IMediator>();
         TestDbContext = TestLifetimeScope.Resolve<ApplicationDbContext>();
+    }
+
+    private void BuildContainerByTestCase(ITestCase? testCase, ContainerBuilder containerBuilder)
+    {
+        if (testCase is { CurrentUser: not null })
+        {
+            containerBuilder.Register(_ =>
+                {
+                    var currentUser = Substitute.For<ICurrentSingle<ApplicationUser>>();
+                    currentUser.GetCurrentUserIdAsync().ReturnsForAnyArgs(testCase.CurrentUser.Id);
+                    currentUser.QueryAsync().ReturnsForAnyArgs(testCase.CurrentUser);
+                    return currentUser;
+                })
+                .As<ICurrentSingle<ApplicationUser>>()
+                .InstancePerLifetimeScope();
+        }
+
+        if (testCase is { Build: not null })
+        {
+            testCase.Build(containerBuilder);
+        }
     }
 
     public ValueTask DisposeAsync()
@@ -49,29 +72,35 @@ public class TestBase : IClassFixture<SequentialCollectionFixture>, IAsyncDispos
 
     private async Task<ApplicationDbContext?> CheckDbConnect()
     {
-        var dbContext = TestLifetimeScope.Resolve<ApplicationDbContext>();
-        // 为了区分mock的和非mock的
-        if (dbContext.GetType().FullName!.Contains("ContractFirst.Api"))
+        if (TestLifetimeScope.TryResolve<DbSetting>(out var dbSetting))
         {
-            var connectString = dbContext.Database.GetConnectionString();
-            if (!string.IsNullOrWhiteSpace(connectString))
+            if (!string.IsNullOrWhiteSpace(dbSetting.ConnectionStrings?.IntegrationTest))
             {
-                if (await dbContext.Database.CanConnectAsync())
+                var dbContext = TestLifetimeScope.Resolve<ApplicationDbContext>();
+                // 为了区分mock的和非mock的
+                if (dbContext.GetType().FullName!.Contains("ContractFirst.Api"))
                 {
-                    return dbContext;
-                }
+                    var connectString = dbContext.Database.GetConnectionString();
+                    if (!string.IsNullOrWhiteSpace(connectString))
+                    {
+                        if (await dbContext.Database.CanConnectAsync())
+                        {
+                            return dbContext;
+                        }
 
-                var sqlConnectionStringBuilder = new SqlConnectionStringBuilder(connectString);
-                var createDbSql = GetCreateDbSql(sqlConnectionStringBuilder);
-                sqlConnectionStringBuilder.InitialCatalog = "master";
-                await using var connection = new SqlConnection(sqlConnectionStringBuilder.ToString());
-                connection.Open();
-                await using var command = new SqlCommand(createDbSql, connection);
-                await command.ExecuteNonQueryAsync();
-                await dbContext.Database.OpenConnectionAsync();
-                if (await dbContext.Database.CanConnectAsync())
-                {
-                    return dbContext;
+                        var sqlConnectionStringBuilder = new MySqlConnectionStringBuilder(connectString);
+                        var createDbSql = GetCreateDbSql(sqlConnectionStringBuilder);
+                        sqlConnectionStringBuilder.Database = "mysql";
+                        await using var connection = new MySqlConnection(sqlConnectionStringBuilder.ToString());
+                        await connection.OpenAsync();
+                        await using var command = new MySqlCommand(createDbSql, connection);
+                        await command.ExecuteNonQueryAsync();
+                        await dbContext.Database.OpenConnectionAsync();
+                        if (await dbContext.Database.CanConnectAsync())
+                        {
+                            return dbContext;
+                        }
+                    }
                 }
             }
         }
@@ -79,13 +108,9 @@ public class TestBase : IClassFixture<SequentialCollectionFixture>, IAsyncDispos
         return null;
     }
 
-    private string GetCreateDbSql(SqlConnectionStringBuilder sqlConnectionStringBuilder)
+    private string GetCreateDbSql(MySqlConnectionStringBuilder sqlConnectionStringBuilder)
     {
-        return
-            $@"IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = '{sqlConnectionStringBuilder.InitialCatalog}')
-BEGIN
-    CREATE DATABASE {sqlConnectionStringBuilder.InitialCatalog};
-END";
+        return $"CREATE DATABASE IF NOT EXISTS {sqlConnectionStringBuilder.Database};";
     }
 
     protected async Task StartupInfrastructure()
@@ -133,13 +158,19 @@ END";
 
     private IMongoDatabase? CheckMongoDbConnection()
     {
-        var mongoDbContext = TestLifetimeScope.Resolve<MongoDbContext>();
-
-        if (mongoDbContext is { Database: not null })
+        if (TestLifetimeScope.TryResolve<MongoDbSetting>(out var mongoSetting))
         {
-            if (mongoDbContext.GetType().FullName!.Contains("ContractFirst.Api"))
+            if (mongoSetting.Servers is { Length: > 0 })
             {
-                return mongoDbContext.Database;
+                var mongoDbContext = TestLifetimeScope.Resolve<MongoDbContext>();
+
+                if (mongoDbContext is { Database: not null })
+                {
+                    if (mongoDbContext.GetType().FullName!.Contains("ContractFirst.Api"))
+                    {
+                        return mongoDbContext.Database;
+                    }
+                }
             }
         }
 

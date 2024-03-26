@@ -1,8 +1,0 @@
-{
-  "DbSetting": {
-    "ConnectionStrings": {
-      "WebApi": "Server=localhost;Database=Database;User Id=sa;Password=Password;Encrypt=True;TrustServerCertificate=true;",
-      "IntegrationTest": "Server=localhost;Database=Database_Test;User Id=sa;Password=Password;Encrypt=True;TrustServerCertificate=true;"
-    }
-  }
-}

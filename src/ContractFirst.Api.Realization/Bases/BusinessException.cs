@@ -6,20 +6,26 @@ namespace ContractFirst.Api.Realization.Bases;
 public class BusinessException : Exception
 {
     public BusinessException(string msg,
-        BusinessExceptionTypeEnum exceptionType = BusinessExceptionTypeEnum.NotSpecified) : base(
+        BusinessExceptionTypeEnum exceptionType = BusinessExceptionTypeEnum.NotSpecified,
+        string? exceptionName = "") : base(
         GetFullExceptionMessage(msg))
     {
         Type = exceptionType;
+        Name += exceptionName;
     }
 
     public BusinessException(IEnumerable<string> msg,
-        BusinessExceptionTypeEnum exceptionType = BusinessExceptionTypeEnum.NotSpecified) : base(
+        BusinessExceptionTypeEnum exceptionType = BusinessExceptionTypeEnum.NotSpecified,
+        string? exceptionName = "") : base(
         GetFullExceptionMessage(msg.ToArray()))
     {
         Type = exceptionType;
+        Name += exceptionName;
     }
 
     public BusinessExceptionTypeEnum Type { get; set; }
+
+    public string? Name { get; private set; } = nameof(BusinessException);
 
     public string TypeName => GetTypeName(Type);
 
@@ -35,46 +41,62 @@ public class BusinessException : Exception
 
     private static string GetFullExceptionMessage(params string[] msg)
     {
-        return string.Join(";", msg);
+        return string.Join(",", msg);
     }
 }
 
 public enum BusinessExceptionTypeEnum
 {
-    [Description("")] NotSpecified,
+    [Description(nameof(BusinessException))]
+    NotSpecified,
 
     /// <summary>
-    ///     参数有误
+    ///     參數有誤
     /// </summary>
-    [Description("参数有误")] ParameterError,
+    [Description("參數有誤")] ParameterError,
 
     /// <summary>
-    ///     配置有误
+    ///     程序配置異常
     /// </summary>
-    [Description("配置有误")] ConfigurationError,
+    [Description("程序配置異常")] ConfigurationError,
 
     /// <summary>
-    ///     身份验证
+    ///     身份驗證不通過
     /// </summary>
-    [Description("身份异常")] UnauthorizedIdentity,
+    [Description("身份驗證不通過")] UnauthorizedIdentity,
 
     /// <summary>
-    ///     兼容性
+    ///     程序不兼容性
     /// </summary>
-    [Description("兼容性错误")] Incompatible,
+    [Description("程序不兼容性")] Incompatible,
 
     /// <summary>
-    ///     数据为空
+    ///     數據不存在
     /// </summary>
-    [Description("数据为空")] DataNull,
+    [Description("數據不存在")] DataNotExists,
 
     /// <summary>
-    ///     权限不足
+    ///     數據重複
     /// </summary>
-    [Description("权限不足")] Forbidden,
+    [Description("數據重複")] DataDuplication,
 
     /// <summary>
-    ///     状态不允许
+    ///     權限不足
     /// </summary>
-    [Description("状态不允许")] DataStatus
+    [Description("權限不足")] Forbidden,
+
+    /// <summary>
+    ///     數據狀態不允許
+    /// </summary>
+    [Description("數據狀態不允許")] DataStatusNotAllow,
+
+    /// <summary>
+    ///     操作已過時
+    /// </summary>
+    [Description("操作過時")] OperationExpired,
+
+    /// <summary>
+    ///     操作太頻繁
+    /// </summary>
+    [Description("操作太頻繁")] FrequentOperation,
 }

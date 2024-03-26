@@ -1,6 +1,6 @@
 ﻿using Autofac;
 using ContractFirst.Api.Engines.Bases;
-using ContractFirst.Api.Infrastructure.EfCore;
+using ContractFirst.Api.Infrastructure.DataPersistence.EfCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace ContractFirst.Api.Engines.EfCoreEngines;
