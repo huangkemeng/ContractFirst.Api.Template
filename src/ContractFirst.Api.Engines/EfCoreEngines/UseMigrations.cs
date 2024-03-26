@@ -16,7 +16,7 @@ public class UseMigrations : IAppEngine
 
     public void Run()
     {
-        var dbContext = migrateScope.Resolve<SqlDbContext>();
+        var dbContext = migrateScope.Resolve<ApplicationDbContext>();
         var connectString = dbContext.Database.GetConnectionString();
         if (!string.IsNullOrWhiteSpace(connectString))
         {

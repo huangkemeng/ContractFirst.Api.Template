@@ -11,13 +11,13 @@ namespace ContractFirst.Api.Engines.MediatorEngines;
 
 public class EfCorePipe : IPipeSpecification<IReceiveContext<IMessage>>
 {
-    private readonly SqlDbContext? dbContext;
+    private readonly ApplicationDbContext? dbContext;
     private readonly ILifetimeScope lifetimeScope;
 
     public EfCorePipe(ILifetimeScope lifetimeScope)
     {
         this.lifetimeScope = lifetimeScope;
-        dbContext = lifetimeScope.Resolve<SqlDbContext>();
+        dbContext = lifetimeScope.Resolve<ApplicationDbContext>();
     }
 
     public bool ShouldExecute(IReceiveContext<IMessage> context, CancellationToken cancellationToken)

@@ -24,7 +24,7 @@ public class TestBase : IClassFixture<SequentialCollectionFixture>, IAsyncDispos
 
     protected ILifetimeScope TestLifetimeScope { get; private set; }
     protected IMediator TestMediator { get; private set; }
-    protected SqlDbContext TestDbContext { get; private set; }
+    protected ApplicationDbContext TestDbContext { get; private set; }
 
     protected void Build(Action<ContainerBuilder>? builderAction = null)
     {
@@ -38,7 +38,7 @@ public class TestBase : IClassFixture<SequentialCollectionFixture>, IAsyncDispos
             ? TestEnvironmentCache.LifetimeScope.BeginLifetimeScope(builderAction)
             : TestEnvironmentCache.LifetimeScope;
         TestMediator = TestLifetimeScope.Resolve<IMediator>();
-        TestDbContext = TestLifetimeScope.Resolve<SqlDbContext>();
+        TestDbContext = TestLifetimeScope.Resolve<ApplicationDbContext>();
     }
 
     public ValueTask DisposeAsync()
@@ -47,9 +47,9 @@ public class TestBase : IClassFixture<SequentialCollectionFixture>, IAsyncDispos
         return default;
     }
 
-    private async Task<SqlDbContext?> CheckDbConnect()
+    private async Task<ApplicationDbContext?> CheckDbConnect()
     {
-        var dbContext = TestLifetimeScope.Resolve<SqlDbContext>();
+        var dbContext = TestLifetimeScope.Resolve<ApplicationDbContext>();
         // 为了区分mock的和非mock的
         if (dbContext.GetType().FullName!.Contains("ContractFirst.Api"))
         {

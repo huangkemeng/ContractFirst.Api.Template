@@ -19,6 +19,7 @@
         <PackageReference Include="Autofac" Version="7.1.0" />
         <PackageReference Include="FluentValidation" Version="11.7.1" />
         <PackageReference Include="Mediator.Net" Version="4.7.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.10" />
     </ItemGroup>

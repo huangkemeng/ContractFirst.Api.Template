@@ -7,12 +7,12 @@ using Microsoft.Extensions.Logging;
 
 namespace ContractFirst.Api.Infrastructure.EfCore;
 
-public class SqlDbContext : DbContext
+public class ApplicationDbContext : DbContext
 {
     private readonly DbSetting dbSetting;
     private readonly SettingOptions settingOptions;
 
-    public SqlDbContext(DbSetting dbSetting, SettingOptions settingOptions)
+    public ApplicationDbContext(DbSetting dbSetting, SettingOptions settingOptions)
     {
         this.dbSetting = dbSetting;
         this.settingOptions = settingOptions;
@@ -20,9 +20,6 @@ public class SqlDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // 全局限制查询的条数 (Top1000)
-        optionsBuilder
-            .ReplaceService<IQueryTranslationPostprocessorFactory, TopRowsQueryTranslationPostprocessorFactory>();
         optionsBuilder.UseSqlServer(
             settingOptions.Scene == SceneOptions.Test
                 ? dbSetting.ConnectionStrings.IntegrationTest

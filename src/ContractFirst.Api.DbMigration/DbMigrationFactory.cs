@@ -1,20 +1,18 @@
-﻿using ContractFirst.Api.Infrastructure.Bases;
+﻿using Autofac;
+using ContractFirst.Api.Engines.Bases;
+using ContractFirst.Api.Infrastructure.Bases;
 using ContractFirst.Api.Infrastructure.EfCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
 
 namespace ContractFirst.Api.DbMigration;
 
-public class DbMigrationFactory : IDesignTimeDbContextFactory<SqlDbContext>
+public class DbMigrationFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 {
-    public SqlDbContext CreateDbContext(string[] args)
+    public ApplicationDbContext CreateDbContext(string[] args)
     {
-        var basePath = AppContext.BaseDirectory;
-        var dbSetting = new DbSetting();
-        IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-        configurationBuilder.AddJsonFile(Path.Combine(basePath, dbSetting.JsonFilePath), true);
-        var configuration = configurationBuilder.Build();
-        configuration.GetSection(nameof(DbSetting)).Bind(dbSetting);
-        return new SqlDbContext(dbSetting, new SettingOptions { Scene = SceneOptions.WebApi });
+        var builder = new ContainerBuilder();
+        var container = builder.SceneBuildWithEngines(SceneOptions.WebApi);
+        var sqlDbContext = container.Resolve<ApplicationDbContext>();
+        return sqlDbContext;
     }
 }

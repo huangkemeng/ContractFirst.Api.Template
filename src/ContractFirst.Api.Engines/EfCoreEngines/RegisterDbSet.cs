@@ -17,7 +17,7 @@ public class RegisterDbSet : IBuilderEngine
 
     public void Run()
     {
-        container.RegisterType<SqlDbContext>()
+        container.RegisterType<ApplicationDbContext>()
             .AsSelf()
             .As<DbContext>()
             .InstancePerLifetimeScope();
@@ -30,7 +30,7 @@ public class RegisterDbSet : IBuilderEngine
             .ToArray();
         if (dbEntityTypes != null && dbEntityTypes.Any())
         {
-            var dbSetMethodType = typeof(SqlDbContext).GetMethods()
+            var dbSetMethodType = typeof(ApplicationDbContext).GetMethods()
                 .First(e => e.Name == nameof(DbContext.Set) && e.GetParameters().Length == 0);
             var dbSetType = typeof(DbSet<>);
             foreach (var dbEntityType in dbEntityTypes)
@@ -39,7 +39,7 @@ public class RegisterDbSet : IBuilderEngine
                 var dbSetGenericType = dbSetType.MakeGenericType(dbEntityType);
                 container.Register(c =>
                     {
-                        var dbContext = c.Resolve<SqlDbContext>();
+                        var dbContext = c.Resolve<ApplicationDbContext>();
                         return dbSettMethodGenericType.Invoke(dbContext, null);
                     })
                     .As(dbSetGenericType);

@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ContractFirst.Api.Engines\ContractFirst.Api.Engines.csproj" />
     <ProjectReference Include="..\ContractFirst.Api.Infrastructure\ContractFirst.Api.Infrastructure.csproj" />
   </ItemGroup>
 

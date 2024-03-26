@@ -1,10 +1,13 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using ContractFirst.Api.Engines.MediatorEngines;
 using ContractFirst.Api.Infrastructure.Bases;
 using ContractFirst.Api.Infrastructure.SeqLog;
+using ContractFirst.Api.Primary.Bases;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog.Filters;
 
 namespace ContractFirst.Api.Engines.Bases;
 
@@ -14,7 +17,11 @@ public static class EngineHub
     {
         var configuration = builder.Services.AddSettings(e => e.Scene = SceneOptions.WebApi);
         builder.Configuration.AddConfiguration(configuration);
-        builder.Logging.AddSeqLog();
+        builder.Logging.AddSeqLog(configure =>
+        {
+            configure.Filter.ByExcluding(Matching.FromSource<DoValidatePipe>());
+            configure.Filter.ByExcluding(Matching.FromSource<EfCorePipe>());
+        });
         builder.Services.RegisterEngines();
         builder.StartBuilderEngines();
         WebApplication? builtApp = default;
@@ -22,6 +29,7 @@ public static class EngineHub
         var serviceProvider = builder.Services.BuildServiceProvider();
         var app = serviceProvider.GetRequiredService<WebApplication>();
         app.Services.StartAppEngines();
+        CurrentApplication.Build(app.Services.GetAutofacRoot());
         return app;
     }
 
@@ -38,7 +46,10 @@ public static class EngineHub
         {
             var iType = engineType.GetInterfaces()
                 .FirstOrDefault(e => e.GetInterfaces().Contains(iEngineType) && e != iEngineType);
-            if (iType != null) services.AddSingleton(iType, engineType);
+            if (iType != null)
+            {
+                services.AddSingleton(iType, engineType);
+            }
         }
     }
 
@@ -59,8 +70,12 @@ public static class EngineHub
         var services = serviceCollection.BuildServiceProvider();
         var engines = services.GetServices<IBuilderEngine>().ToArray();
         if (engines is { Length: > 0 })
+        {
             foreach (var engine in engines)
+            {
                 engine.Run();
+            }
+        }
 
         containerBuilder.Populate(serviceCollection);
     }
@@ -69,24 +84,36 @@ public static class EngineHub
     {
         var engines = services.GetServices<IAppEngine>().ToArray();
         if (engines is { Length: > 0 })
+        {
             foreach (var engine in engines)
+            {
                 engine.Run();
+            }
+        }
     }
 
     public static IContainer TestBuildWithEngines(this ContainerBuilder containerBuilder,
         Action<ContainerBuilder>? builderAction = null)
     {
+        return containerBuilder.SceneBuildWithEngines(SceneOptions.Test, builderAction);
+    }
+
+    public static IContainer SceneBuildWithEngines(this ContainerBuilder containerBuilder, SceneOptions scene,
+        Action<ContainerBuilder>? builderAction = null)
+    {
         IServiceCollection serviceCollection = new ServiceCollection();
         IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-        var configuration = serviceCollection.AddSettings(e => e.Scene = SceneOptions.Test);
+        var configuration = serviceCollection.AddSettings(e => e.Scene = scene);
         configurationBuilder.AddConfiguration(configuration);
         var configurationRoot = configurationBuilder.Build();
         serviceCollection.AddSingleton(configurationRoot);
         serviceCollection.AddSingleton<IConfiguration>(configurationRoot);
         serviceCollection.RegisterEngines();
-        serviceCollection.StartBuilderEngines(containerBuilder);
+        StartBuilderEngines(serviceCollection, containerBuilder);
         serviceCollection.BuildServiceProvider();
         builderAction?.Invoke(containerBuilder);
-        return containerBuilder.Build();
+        var container = containerBuilder.Build();
+        CurrentApplication.Build(container);
+        return container;
     }
 }
