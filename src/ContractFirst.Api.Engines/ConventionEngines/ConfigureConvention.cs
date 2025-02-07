@@ -1,19 +1,10 @@
 ﻿using System.Globalization;
-using System.Security.Claims;
-using System.Text;
 using ContractFirst.Api.Engines.Bases;
 using ContractFirst.Api.Infrastructure.CorsFunction;
 using ContractFirst.Api.Infrastructure.JwtFunction;
-using ContractFirst.Api.Realization.Bases;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 
 namespace ContractFirst.Api.Engines.ConventionEngines;
 
@@ -33,12 +24,17 @@ public class ConfigureConvention : IBuilderEngine
     {
         services.AddHttpClient();
         services.AddHttpContextAccessor();
-        services.AddControllers();
+        services.AddControllers().AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new Rfc1123DateTimeConverter());
+            options.JsonSerializerOptions.Converters.Add(new Rfc1123DateTimeOffsetConverter());
+        });
         services.AddRouting(e => { e.LowercaseUrls = true; });
         services.AddEndpointsApiExplorer();
         services.AddCorsFunction();
         services.AddJwtFunction();
         services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddSwaggerGen(options => { options.DescribeAllParametersInCamelCase(); });
     }
 }
 

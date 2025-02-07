@@ -1,4 +1,6 @@
-﻿namespace ContractFirst.Api.Infrastructure.DataPersistence.DataEntityBases;
+﻿using MongoDB.Bson;
+
+namespace ContractFirst.Api.Infrastructure.DataPersistence.DataEntityBases;
 
 public static class InitEntityExtensions
 {
@@ -12,6 +14,16 @@ public static class InitEntityExtensions
         if (entity is IHasCreatedOn hasCreatedDate)
         {
             hasCreatedDate.CreatedOn = DateTime.UtcNow;
+        }
+
+        if (entity is ICanSoftDelete canSoftDelete)
+        {
+            canSoftDelete.IsDeleted = false;
+        }
+
+        if (entity is IHasKey<ObjectId> hasObjectId)
+        {
+            hasObjectId.Id = ObjectId.GenerateNewId();
         }
     }
 }

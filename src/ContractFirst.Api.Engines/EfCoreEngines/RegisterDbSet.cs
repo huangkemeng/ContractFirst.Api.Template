@@ -29,19 +29,13 @@ public class RegisterDbSet : IBuilderEngine
             .ToArray();
         if (dbEntityTypes != null && dbEntityTypes.Any())
         {
-            var dbSetMethodType = typeof(ApplicationDbContext).GetMethods()
-                .First(e => e.Name == nameof(DbContext.Set) && e.GetParameters().Length == 0);
-            var dbSetType = typeof(DbSet<>);
             foreach (var dbEntityType in dbEntityTypes)
             {
-                var dbSettMethodGenericType = dbSetMethodType.MakeGenericMethod(dbEntityType);
-                var dbSetGenericType = dbSetType.MakeGenericType(dbEntityType);
-                _container.Register(c =>
-                    {
-                        var dbContext = c.Resolve<ApplicationDbContext>();
-                        return dbSettMethodGenericType.Invoke(dbContext, null);
-                    })
-                    .As(dbSetGenericType);
+                var dbAccessorType = typeof(DbAccessor<>).MakeGenericType(dbEntityType);
+                _container
+                    .RegisterType(dbAccessorType)
+                    .AsSelf()
+                    .InstancePerLifetimeScope();
             }
         }
     }

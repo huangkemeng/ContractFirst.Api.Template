@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Reflection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ContractFirst.Api.Infrastructure.Bases;
@@ -35,6 +36,10 @@ public static class SettingExtensions
                 services.AddSingleton(settingType, stringSetting);
             }
         }
+        
+        builder.AddUserSecrets(assembly: Assembly.GetExecutingAssembly(),
+            optional: true,
+            reloadOnChange: true);
 
         if (File.Exists(Path.Combine(basePath, "appsettings.json")))
         {

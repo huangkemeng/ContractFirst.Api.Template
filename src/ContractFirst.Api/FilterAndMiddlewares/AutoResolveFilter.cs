@@ -1,6 +1,7 @@
-﻿using ContractFirst.Api.Primary.Bases;
+﻿using Autofac;
+using ContractFirst.Api.Controllers.Bases;
+using Mediator.Net;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace ContractFirst.Api.FilterAndMiddlewares;
 
@@ -10,21 +11,15 @@ public class AutoResolveFilter : IAsyncActionFilter
         ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var controller = context.Controller;
-        var type = controller.GetType();
-        var typeProperties = type.GetProperties();
-        foreach (var typeProperty in typeProperties)
+        if (controller is IHasMediator mediatorController)
         {
-            if (typeProperty.IsPubliclyWritable() && typeProperty.HasAttribute<AutoResolveAttribute>())
+            var lifetimeScope = context.HttpContext.RequestServices.GetService<ILifetimeScope>();
+            if (lifetimeScope != null && lifetimeScope.TryResolve<IMediator>(out var mediator))
             {
-                if (typeProperty.GetValue(controller) == null)
-                {
-                    if (CurrentApplication.TryContextResolve(typeProperty.PropertyType, out var autoResolvePropertyValue))
-                    {
-                        typeProperty.SetValue(controller, autoResolvePropertyValue);
-                    }
-                }
+                mediatorController.Mediator = mediator;
             }
         }
+
         return next();
     }
 }

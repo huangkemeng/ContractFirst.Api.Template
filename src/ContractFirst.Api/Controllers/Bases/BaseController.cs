@@ -9,7 +9,7 @@ namespace ContractFirst.Api.Controllers.Bases;
 // [Authorize]
 [TypeFilter(typeof(AutoResolveFilter))]
 [TypeFilter(typeof(HandleTimezoneResultFilter))]
-public class BaseController : ControllerBase
+public class BaseController : ControllerBase, IHasMediator
 {
-    [AutoResolve] public IMediator Mediator { get; set; }
+    public IMediator Mediator { get; set; }
 }
