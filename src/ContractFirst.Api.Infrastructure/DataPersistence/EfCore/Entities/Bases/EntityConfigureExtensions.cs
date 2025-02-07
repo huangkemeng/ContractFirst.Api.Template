@@ -9,21 +9,7 @@ namespace ContractFirst.Api.Infrastructure.DataPersistence.EfCore.Entities.Bases
 
 public static class EntityConfigureExtensions
 {
-    public static void AutoConfigureGuid<T>(this EntityTypeBuilder<T> builder,
-        IRelationalTypeMappingSource mappingSource) where T : class, IHasKey<Guid>
-    {
-        builder.HasKey(x => x.Id);
-        builder.AutoConfigureWithoutKey(mappingSource);
-    }
-
-    public static void AutoConfigureInt<T>(this EntityTypeBuilder<T> builder,
-        IRelationalTypeMappingSource mappingSource) where T : class, IHasKey<int>
-    {
-        builder.HasKey(x => x.Id);
-        builder.AutoConfigureWithoutKey(mappingSource);
-    }
-
-    public static void AutoConfigureWithoutKey<T>(this EntityTypeBuilder<T> builder,
+    public static void AutoConfigure<T>(this EntityTypeBuilder<T> builder,
         IRelationalTypeMappingSource mappingSource)
         where T : class, IEntity
     {
@@ -32,6 +18,18 @@ public static class EntityConfigureExtensions
         var entityProperties = GetEntityProperties(entityType);
         var propMethodInfo = typeof(EntityTypeBuilder<T>).GetMethod(nameof(EntityTypeBuilder<T>.Property), 0,
             [typeof(Type), typeof(string)])!;
+        var idName = nameof(IHasKey<Guid>.Id);
+        var interfaces = entityType.GetInterfaces();
+        if (interfaces.Any(e => e == typeof(ICanSoftDelete)))
+        {
+            builder.HasQueryFilter(e => !((ICanSoftDelete)e).IsDeleted);
+        }
+
+        if (interfaces.Any(e => e.IsGenericType && e.GetGenericTypeDefinition() == typeof(IHasKey<>)))
+        {
+            builder.HasKey(idName);
+        }
+
         foreach (var entityProperty in entityProperties)
         {
             var storeType = GetMySqlStoreType(mappingSource, entityProperty.PropertyType);

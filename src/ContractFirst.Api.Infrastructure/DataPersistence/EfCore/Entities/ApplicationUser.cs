@@ -15,7 +15,7 @@ public class ApplicationUser : IEfEntity<ApplicationUser>, IHasKey<Guid>
     public static void ConfigureEntityMapping(EntityTypeBuilder<ApplicationUser> builder,
         IRelationalTypeMappingSource mappingSource)
     {
-        builder.AutoConfigureGuid(mappingSource);
+        builder.AutoConfigure(mappingSource);
     }
 
     public Guid Id { get; set; }

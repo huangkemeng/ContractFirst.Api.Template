@@ -29,19 +29,205 @@ public static class EfCoreQueryableExtensions
         return query;
     }
 
-    public static async Task<PaginatedResult<T>> PaginateAsync<T>(this IQueryable<T> query, IPageable? pageable,
+    public static async Task<PaginatedResult<T>> PaginateAsync<T>(this IOrderedQueryable<T> orderByQuery,
+        IPageable? pageable,
         CancellationToken cancellationToken) where T : class
     {
         PaginatedResult<T> paginatedResult = new()
         {
-            Total = await query.CountAsync(cancellationToken)
+            Total = await orderByQuery.CountAsync(cancellationToken)
         };
-        if (pageable != null)
-            query = query.Skip((pageable.Offset - 1) * pageable.PageSize)
-                .Take(pageable.PageSize);
+        var query = pageable != null ? orderByQuery.Skip((pageable.Offset - 1) * pageable.PageSize).Take(pageable.PageSize) : orderByQuery;
+        
         paginatedResult.List = await query.ToListAsync(cancellationToken);
         return paginatedResult;
     }
+
+    public static IQueryable<T> DynamicFilterAnd<T>(this IQueryable<T> query, List<DynamicFilterParameter>? filters)
+        where T : class
+    {
+        if (filters == null || filters.Count == 0)
+        {
+            return query;
+        }
+
+        var type = typeof(T);
+        var parameterExpression = Expression.Parameter(type, "x");
+        Expression finalBody = null;
+
+        foreach (var filter in filters)
+        {
+            if (filter is { Value: not null, FieldName: not null, Operator: not null })
+            {
+                var prop = type.GetProperties().FirstOrDefault(e =>
+                    e.Name.Equals(filter.FieldName, StringComparison.OrdinalIgnoreCase));
+                MemberExpression memberExpression = null;
+                Type propType = null;
+                if (prop != null)
+                {
+                    memberExpression = Expression.MakeMemberAccess(parameterExpression, prop);
+                    propType = prop.PropertyType;
+                }
+                else
+                {
+                    var fieldInfo = type.GetFields()
+                        .FirstOrDefault(e => e.Name.Equals(filter.FieldName, StringComparison.OrdinalIgnoreCase));
+                    if (fieldInfo != null)
+                    {
+                        memberExpression = Expression.MakeMemberAccess(parameterExpression, fieldInfo);
+                        propType = fieldInfo.FieldType;
+                    }
+                }
+
+                if (memberExpression != null)
+                {
+                    Expression body = null;
+                    var valueExpression = Expression.Convert(Expression.Constant(filter.Value), propType);
+                    switch (filter.Operator)
+                    {
+                        case DynamicFilterOperator.Equal:
+                            body = Expression.Equal(memberExpression, valueExpression);
+                            break;
+                        case DynamicFilterOperator.NotEqual:
+                            body = Expression.NotEqual(memberExpression, valueExpression);
+                            break;
+                        case DynamicFilterOperator.GreaterThan:
+                            body = Expression.GreaterThan(memberExpression, valueExpression);
+                            break;
+                        case DynamicFilterOperator.GreaterThanOrEqual:
+                            body = Expression.GreaterThanOrEqual(memberExpression, valueExpression);
+                            break;
+                        case DynamicFilterOperator.LessThan:
+                            body = Expression.LessThan(memberExpression, valueExpression);
+                            break;
+                        case DynamicFilterOperator.LessThanOrEqual:
+                            body = Expression.LessThanOrEqual(memberExpression, valueExpression);
+                            break;
+                        case DynamicFilterOperator.Contains:
+                            var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+                            if (containsMethod != null)
+                            {
+                                body = Expression.Call(memberExpression, containsMethod, valueExpression);
+                            }
+
+                            break;
+                    }
+
+                    if (body != null)
+                    {
+                        if (finalBody == null)
+                        {
+                            finalBody = body;
+                        }
+                        else
+                        {
+                            finalBody = Expression.AndAlso(finalBody, body);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (finalBody != null)
+        {
+            var finalExpression = Expression.Lambda<Func<T, bool>>(finalBody, parameterExpression);
+            query = query.Where(finalExpression);
+        }
+
+        return query;
+    }
+
+    public static IQueryable<T> DynamicFilterOr<T>(this IQueryable<T> query, List<DynamicFilterParameter>? filters)
+        where T : class
+    {
+        if (filters == null || filters.Count == 0)
+        {
+            return query;
+        }
+
+        var type = typeof(T);
+        var parameterExpression = Expression.Parameter(type, "x");
+        Expression finalBody = null;
+
+        foreach (var filter in filters)
+        {
+            var prop = type.GetProperties().FirstOrDefault(e =>
+                e.Name.Equals(filter.FieldName, StringComparison.OrdinalIgnoreCase));
+            MemberExpression memberExpression = null;
+            Type propType = null;
+            if (prop != null)
+            {
+                memberExpression = Expression.MakeMemberAccess(parameterExpression, prop);
+                propType = prop.PropertyType;
+            }
+            else
+            {
+                var fieldInfo = type.GetFields()
+                    .FirstOrDefault(e => e.Name.Equals(filter.FieldName, StringComparison.OrdinalIgnoreCase));
+                if (fieldInfo != null)
+                {
+                    memberExpression = Expression.MakeMemberAccess(parameterExpression, fieldInfo);
+                    propType = fieldInfo.FieldType;
+                }
+            }
+
+            if (memberExpression != null)
+            {
+                Expression body = null;
+                var valueExpression = Expression.Convert(Expression.Constant(filter.Value), propType);
+                switch (filter.Operator)
+                {
+                    case DynamicFilterOperator.Equal:
+                        body = Expression.Equal(memberExpression, valueExpression);
+                        break;
+                    case DynamicFilterOperator.NotEqual:
+                        body = Expression.NotEqual(memberExpression, valueExpression);
+                        break;
+                    case DynamicFilterOperator.GreaterThan:
+                        body = Expression.GreaterThan(memberExpression, valueExpression);
+                        break;
+                    case DynamicFilterOperator.GreaterThanOrEqual:
+                        body = Expression.GreaterThanOrEqual(memberExpression, valueExpression);
+                        break;
+                    case DynamicFilterOperator.LessThan:
+                        body = Expression.LessThan(memberExpression, valueExpression);
+                        break;
+                    case DynamicFilterOperator.LessThanOrEqual:
+                        body = Expression.LessThanOrEqual(memberExpression, valueExpression);
+                        break;
+                    case DynamicFilterOperator.Contains:
+                        var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+                        if (containsMethod != null)
+                        {
+                            body = Expression.Call(memberExpression, containsMethod, valueExpression);
+                        }
+
+                        break;
+                }
+
+                if (body != null)
+                {
+                    if (finalBody == null)
+                    {
+                        finalBody = body;
+                    }
+                    else
+                    {
+                        finalBody = Expression.OrElse(finalBody, body);
+                    }
+                }
+            }
+        }
+
+        if (finalBody != null)
+        {
+            var finalExpression = Expression.Lambda<Func<T, bool>>(finalBody, parameterExpression);
+            query = query.Where(finalExpression);
+        }
+
+        return query;
+    }
+
 
     public static IQueryable<T> WhereWhile<T>(this IQueryable<T> query, bool predicate,
         Expression<Func<T, bool>> expression) where T : class

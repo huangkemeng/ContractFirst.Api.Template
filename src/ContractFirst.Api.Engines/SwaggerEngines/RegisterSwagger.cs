@@ -28,6 +28,7 @@ public class RegisterSwagger : IBuilderEngine
                     Version = info?.Version,
                     Description = info?.Description
                 });
+                options.DescribeAllParametersInCamelCase();
             });
 
             options.SwaggerDoc("Other", new OpenApiInfo
@@ -88,6 +89,8 @@ public class RegisterSwagger : IBuilderEngine
             options.IncludeXmlComments(Path.Combine(basePath, "ContractFirst.Api.Primary.xml"), true);
             options.IncludeXmlComments(Path.Combine(basePath, "ContractFirst.Api.Infrastructure.xml"), true);
             options.SchemaFilter<DisplayEnumDescFilter>();
+            options.SchemaFilter<SwaggerSchemaPropertyFilter>();
+            options.OperationFilter<SwaggerQueryPropertyFilter>();
             options.OperationFilter<SetDefaultOperationIdFilter>();
         });
     }

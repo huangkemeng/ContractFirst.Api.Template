@@ -1,4 +1,9 @@
-﻿using ContractFirst.Api.Primary.Bases;
+﻿using Autofac;
+using ContractFirst.Api.Primary.Bases;
+using ContractFirst.Api.Primary.Contracts.Bases;
+using Mediator.Net;
+using Mediator.Net.Context;
+using Mediator.Net.Contracts;
 
 namespace ContractFirst.Api.Realization.Handlers.ReusableHandlers.Bases;
 
@@ -30,5 +35,38 @@ public static class ReusableExtensions
 
         throw new InvalidOperationException(
             $"Current reusable parameter '{typeof(TParameter).Name} + {typeof(TReturn).Name}' does not have a corresponding handler");
+    }
+
+    public static async Task ReuseHandleAsync<TParameter>(this IReceiveContext<IMessage> context, TParameter parameter,
+        CancellationToken cancellationToken = default) where TParameter : IReusableHandlerParameter
+    {
+        if (context.TryGetService<IMediator>(out var mediator))
+        {
+            var response =
+                await mediator.RequestAsync<GetCurrentLifetimeScopeRequest, GetCurrentLifetimeScopeResponse>(
+                    new GetCurrentLifetimeScopeRequest(), cancellationToken);
+            var scope = response.LifetimeScope;
+            var reusableHandler = scope.Resolve<IReusableHandler<TParameter>>();
+            await reusableHandler.Handle(parameter, cancellationToken);
+        }
+    }
+
+    public static async Task<TReturn> ReuseHandleAsync<TParameter, TReturn>(this IReceiveContext<IMessage> context,
+        TParameter parameter,
+        CancellationToken cancellationToken = default) where TParameter : IReusableHandlerParameter
+        where TReturn : IReusableHandlerReturn
+    {
+        if (context.TryGetService<IMediator>(out var mediator))
+        {
+            var response =
+                await mediator.RequestAsync<GetCurrentLifetimeScopeRequest, GetCurrentLifetimeScopeResponse>(
+                    new GetCurrentLifetimeScopeRequest(), cancellationToken);
+            var scope = response.LifetimeScope;
+            var reusableHandler = scope.Resolve<IReusableHandler<TParameter, TReturn>>();
+            var result = await reusableHandler.Handle(parameter, cancellationToken);
+            return result;
+        }
+
+        return default!;
     }
 }
