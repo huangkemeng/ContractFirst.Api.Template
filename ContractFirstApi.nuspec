@@ -3,10 +3,10 @@
   <metadata>
 
     <id>ContractFirstApi.Template</id>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
     <title>ContractFirstApi.Template</title>
     <authors>WilTechs</authors>
-    <description>WilTechs Architecture Solution Template for and .NET 7.</description>
+    <description>WilTechs Architecture Solution Template for and .NET 8.</description>
     <releaseNotes>Update packages</releaseNotes>
     <projectUrl>https://gitlab.sjfood.us/.net-c-team/contractfirst.api.template</projectUrl>
     <repository type="git" url="https://gitlab.sjfood.us/.net-c-team/contractfirst.api.template.git" branch="master" />
