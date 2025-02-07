@@ -43,48 +43,6 @@ public static class EfCoreQueryableExtensions
         return paginatedResult;
     }
 
-    public static async Task<DetailPaginatedResult<T>> DetailPaginateAsync<T>(
-        this IQueryable<T> query, IPageable? pageable,
-        Expression<Func<T, object>>? orderBy = null,
-        bool descending = true,
-        CancellationToken cancellationToken = default) where T : class
-    {
-        DetailPaginatedResult<T> paginatedResult = new()
-        {
-            Total = await query.CountAsync(cancellationToken)
-        };
-
-        if (orderBy != null)
-        {
-            query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
-        }
-
-        if (paginatedResult.Total == 0)
-        {
-            paginatedResult.List = new List<T>();
-            if (pageable != null)
-            {
-                paginatedResult.Offset = pageable.Offset;
-            }
-
-            return paginatedResult;
-        }
-
-        if (pageable != null)
-        {
-            query = query.Skip((pageable.Offset - 1) * pageable.PageSize)
-                .Take(pageable.PageSize);
-
-            paginatedResult.List = await query.ToListAsync(cancellationToken);
-            paginatedResult.Offset = pageable.Offset;
-
-            var totalPages = (int)Math.Ceiling(paginatedResult.Total / (double)pageable.PageSize);
-            paginatedResult.TotalPages = totalPages < 0 ? 0 : totalPages;
-        }
-
-        return paginatedResult;
-    }
-
     public static IQueryable<T> DynamicFilterAnd<T>(this IQueryable<T> query, List<DynamicFilterParameter>? filters)
         where T : class
     {
@@ -320,13 +278,4 @@ public class PaginatedResult<T>
     public List<T> List { get; set; }
 
     public int Total { get; set; }
-}
-
-public class DetailPaginatedResult<T> : PaginatedResult<T>, IDetailPaginated
-{
-    public bool HasPreviousPage => Offset > 1;
-
-    public bool HasNextPage => Offset < TotalPages;
-    public int TotalPages { get; set; }
-    public int Offset { get; set; }
 }
