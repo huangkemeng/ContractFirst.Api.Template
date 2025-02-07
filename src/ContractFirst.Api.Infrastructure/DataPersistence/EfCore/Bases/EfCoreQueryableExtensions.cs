@@ -29,16 +29,16 @@ public static class EfCoreQueryableExtensions
         return query;
     }
 
-    public static async Task<PaginatedResult<T>> PaginateAsync<T>(this IQueryable<T> query, IPageable? pageable,
+    public static async Task<PaginatedResult<T>> PaginateAsync<T>(this IOrderedQueryable<T> orderByQuery,
+        IPageable? pageable,
         CancellationToken cancellationToken) where T : class
     {
         PaginatedResult<T> paginatedResult = new()
         {
-            Total = await query.CountAsync(cancellationToken)
+            Total = await orderByQuery.CountAsync(cancellationToken)
         };
-        if (pageable != null)
-            query = query.Skip((pageable.Offset - 1) * pageable.PageSize)
-                .Take(pageable.PageSize);
+        var query = pageable != null ? orderByQuery.Skip((pageable.Offset - 1) * pageable.PageSize).Take(pageable.PageSize) : orderByQuery;
+        
         paginatedResult.List = await query.ToListAsync(cancellationToken);
         return paginatedResult;
     }
@@ -63,7 +63,7 @@ public static class EfCoreQueryableExtensions
                     e.Name.Equals(filter.FieldName, StringComparison.OrdinalIgnoreCase));
                 MemberExpression memberExpression = null;
                 Type propType = null;
-                if (prop!= null)
+                if (prop != null)
                 {
                     memberExpression = Expression.MakeMemberAccess(parameterExpression, prop);
                     propType = prop.PropertyType;
@@ -71,15 +71,15 @@ public static class EfCoreQueryableExtensions
                 else
                 {
                     var fieldInfo = type.GetFields()
-                       .FirstOrDefault(e => e.Name.Equals(filter.FieldName, StringComparison.OrdinalIgnoreCase));
-                    if (fieldInfo!= null)
+                        .FirstOrDefault(e => e.Name.Equals(filter.FieldName, StringComparison.OrdinalIgnoreCase));
+                    if (fieldInfo != null)
                     {
                         memberExpression = Expression.MakeMemberAccess(parameterExpression, fieldInfo);
                         propType = fieldInfo.FieldType;
                     }
                 }
 
-                if (memberExpression!= null)
+                if (memberExpression != null)
                 {
                     Expression body = null;
                     var valueExpression = Expression.Convert(Expression.Constant(filter.Value), propType);
@@ -105,14 +105,15 @@ public static class EfCoreQueryableExtensions
                             break;
                         case DynamicFilterOperator.Contains:
                             var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-                            if (containsMethod!= null)
+                            if (containsMethod != null)
                             {
                                 body = Expression.Call(memberExpression, containsMethod, valueExpression);
                             }
+
                             break;
                     }
 
-                    if (body!= null)
+                    if (body != null)
                     {
                         if (finalBody == null)
                         {
@@ -127,7 +128,7 @@ public static class EfCoreQueryableExtensions
             }
         }
 
-        if (finalBody!= null)
+        if (finalBody != null)
         {
             var finalExpression = Expression.Lambda<Func<T, bool>>(finalBody, parameterExpression);
             query = query.Where(finalExpression);
