@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using ContractFirst.Api.Engines.Bases;
+using ContractFirst.Api.Infrastructure.Bases;
 using ContractFirst.Api.Infrastructure.CorsFunction;
 using ContractFirst.Api.Infrastructure.JwtFunction;
 using FluentValidation;
@@ -23,6 +24,7 @@ public class ConfigureConvention : IBuilderEngine
     public void Run()
     {
         services.AddHttpClient();
+        services.AddHealthChecks().AddCheck<Status200HealthCheck>("Status200Check");
         services.AddHttpContextAccessor();
         services.AddControllers().AddJsonOptions(options =>
         {
@@ -54,6 +56,7 @@ public class UseConvention : IAppEngine
         app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.MapHealthChecks("/health");
         ValidatorOptions.Global.LanguageManager.Enabled = true;
         ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("zh-CN");
     }
