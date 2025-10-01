@@ -1,552 +1,322 @@
-# ContractFirstApi.Template 開發框架
+# ContractFirst API Template
 
-## NuGet 包地址
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+一个基于 .NET 8 的现代化契约优先 API 开发模板，采用 Clean Architecture 和模块化设计，提供企业级 API 开发的最佳实践。
+
+## ✨ 核心特性
+
+### 🏗️ 架构设计
+- **契约优先开发**: 基于接口和契约的 API 设计模式
+- **Clean Architecture**: 清晰的层次分离和依赖规则
+- **模块化设计**: 可插拔的引擎系统，便于扩展和维护
+- **多场景支持**: 支持 Web API、测试、集成测试等多种场景
+
+### 🔧 技术栈
+- **运行时**: .NET 8.0
+- **Web框架**: ASP.NET Core
+- **依赖注入**: Autofac (支持属性注入)
+- **数据访问**: Entity Framework Core + MongoDB
+- **消息处理**: Mediator.Net (CQRS 模式)
+- **对象映射**: AutoMapper
+- **API文档**: Swagger/OpenAPI 3.0
+- **认证授权**: JWT Bearer Token
+- **日志系统**: Serilog + Seq
+- **测试框架**: xUnit + NSubstitute
+
+### 🚀 开箱即用
+- **完整的基础设施**: JWT 认证、CORS、健康检查、异常处理
+- **多数据库支持**: MySQL (EF Core) + MongoDB
+- **容器化支持**: Docker + Docker Compose
+- **CI/CD 集成**: GitLab CI 配置
+- **代码质量**: 自定义代码分析器 + 单元测试
+
+## 📁 项目结构
 
 ```
-https://www.nuget.org/packages/ContractFirstApi.Template/
+ContractFirst.Api.Template/
+├── src/
+│   ├── ContractFirst.Api/                 # Web API 主项目
+│   │   ├── Controllers/                   # API 控制器
+│   │   ├── FilterAndMiddlewares/          # 过滤器和中间件
+│   │   └── Program.cs                     # 应用入口 (极简配置)
+│   ├── ContractFirst.Api.Engines/         # 引擎系统 (核心)
+│   │   ├── Bases/                         # 引擎基础接口
+│   │   ├── MediatorEngines/               # 中介者配置
+│   │   ├── SwaggerEngines/                # API 文档配置
+│   │   ├── EfCoreEngines/                 # EF Core 配置
+│   │   ├── MongoDbEngines/                # MongoDB 配置
+│   │   └── ConventionEngines/             # 约定配置
+│   ├── ContractFirst.Api.Infrastructure/  # 基础设施层
+│   │   ├── DataPersistence/               # 数据持久化
+│   │   ├── JwtFunction/                   # JWT 认证
+│   │   ├── CorsFunction/                  # CORS 配置
+│   │   └── SeqLog/                        # 日志配置
+│   ├── ContractFirst.Api.Primary/         # 核心契约层
+│   │   ├── Contracts/                     # API 契约接口
+│   │   └── Bases/                         # 基础类和扩展
+│   ├── ContractFirst.Api.Realization/     # 业务实现层
+│   │   ├── Handlers/                      # Mediator 处理器
+│   │   ├── Currents/                      # 当前上下文
+│   │   └── Bases/                         # 业务基础类
+│   ├── ContractFirst.Api.DbMigration/     # 数据库迁移工具
+│   └── tests/                             # 测试项目
+├── src.analyzers/                         # 代码分析器
+└── 配置文件
+    ├── Dockerfile                         # Docker 配置
+    ├── .gitlab-ci.yml                     # CI/CD 配置
+    └── *.ps1                              # PowerShell 脚本
 ```
 
-## 背景
+## 🚀 快速开始
 
-按照傳統的前後端協作方式，一般是後端將接口開發好後，通過 Swagger UI 的方式將接口給到前端對接。但是需要強調的是，大多數情況下，後端的業務邏輯複雜，接口開發完成並交付給前端對接的速度可能會有點慢。
+### 环境要求
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) (可选)
+- 数据库: MySQL 8.0+ 或 MongoDB 6.0+
 
-基於這樣的一種場景，我總結出了**契約優先（ContractFirst）** 的開發方式，並且做成了基於 C# 開發的 VS 模板。基於這樣的一套模板以及接下來我將要介紹的開發方式，開發者將可以大大提高前後端的並行開發的效率。此外，除了契約優先這樣一種開發理念之外，本套模板還有諸多優勢。
-
-## 快速上手
-
-### 安裝模板
-
+### 1. 克隆项目
 ```bash
-dotnet new install ContractFirstApi.Template::0.1.2
+git clone https://github.com/huangkemeng/ContractFirst.Api.Template.git
+cd ContractFirst.Api.Template
 ```
 
-### 創建項目
+### 2. 配置数据库
+#### MySQL 配置
+编辑 `src/ContractFirst.Api.Infrastructure/DataPersistence/EfCore/db-setting.json`:
+```json
+{
+  "DbSetting": {
+    "ConnectionStrings": {
+      "WebApi": "Server=localhost;Database=contractfirst;Uid=root;Pwd=your_password;",
+      "IntegrationTest": "Server=localhost;Database=contractfirst_test;User Id=sa;Password=Password;"
+    }
+  }
+}
+```
 
+#### MongoDB 配置
+编辑 `src/ContractFirst.Api.Infrastructure/DataPersistence/MongoDb/mongodb-setting.json`:
+```json
+{
+  "MongoDbSetting": {
+    "Servers": [
+      {
+        "Host": "localhost",
+        "Port": 27017
+      }
+    ],
+    "DatabaseNames": {
+      "WebApi": "contractfirst",
+      "IntegrationTest": "contractfirst_test"
+    }
+  }
+}
+```
+
+### 3. 运行数据库迁移
 ```bash
-dotnet new ContractFirst --name <your project name>
+cd src/ContractFirst.Api.DbMigration
+./run-migration.ps1
 ```
 
-## 項目結構
-
-一個剛創建的項目將包含下面的內容：
-
-```
-<your project name>/
-├── <your project name>/          # WebAPI 層
-├── <your project name>.DbMigration/    # 數據遷移層
-├── <your project name>.Engines/        # AOP 引擎層
-├── <your project name>.Infrastructure/ # 基礎設施層
-├── <your project name>.Primary/        # 基本層（關鍵層）
-├── <your project name>.Realization/    # 實現層
-├── <your project name>.CodeAnalyzer/   # 代碼分析器層（可選）
-├── <your project name>.CodeAnalyzer.Tests/ # 代碼分析器測試層（可選）
-└── <your project name>.CodeGenerator/  # 代碼生成器層（可選）
+### 4. 启动应用
+```bash
+cd src/ContractFirst.Api
+dotnet run
 ```
 
-### 各項目功能說明
+应用将在以下地址启动：
+- **HTTPS**: https://localhost:7247
+- **HTTP**: http://localhost:5050
+- **Swagger UI**: https://localhost:7247/swagger
 
-- **無後綴（WebAPI 層）**：包含 Controller 以及 Startup 的內容，想要看到 Swagger 頁面，應將該項目設置為啟動項目並啟動
-- **.DbMigration**：數據遷移層，使用 EFCore Tool 進行數據庫遷移的腳本以及用來指定數據庫上下文的 DbMigrationFactory
-- **.Engines**：AOP 引擎層，所有的 AOP 都在這層進行編寫，是整個項目能夠自動運轉起來的發動機
-- **.Infrastructure**：基礎設施層，數據庫，阿里雲等等常見的基礎設施服務，將在這層編寫
-- **.Primary**：基本層，也可以稱作關鍵層。該層沒有任何具體的實現，只包含了一些契約接口的定義以及實體的定義
-- **.Realization**：實現層。是對基本層中定義的契約的實現
-- **.CodeAnalyzer**：代碼分析器層。用於約束項目的代碼風格，使項目的代碼更加規範化（可選）
-- **.CodeAnalyzer.Tests**：代碼分析器的測試層，用於測試我們編寫的分析器和代碼修復器（可選）
-- **.CodeGenerator**：代碼生成器層，用於動態生成項目代碼（可選）
+## 🐳 Docker 部署
 
-## 使用教程
+### 使用 Docker Compose (推荐)
+```bash
+# 启动所有服务 (应用 + 数据库)
+docker-compose up -d
 
-### 什麼是 AOP 引擎？
+# 查看服务状态
+docker-compose ps
 
-AOP 引擎是使用 AOP 的思路，集中將有關系的內容關聯起來，將需要注入的資源發現並注入等等一切自動化的實現。
-
-**示例**：基礎設施層中，EfCore 有配置文件 `setting.json` 和對應的 `setting.cs` 類，而 `setting.cs` 的值是自動從 `setting.json` 中來的，這兩個文件能自動關聯，就是因為在 AOP 引擎層實現的一個 `SettingEngine`。
-
-### 使用 AOP 引擎
-
-#### 內置引擎及其功能
-
-- **ConventionEngines**：常規配置引擎
-  - 跨域配置
-  - JWT 的配置
-  - 全局異常配置
-  - 全局時區處理配置
-  - 自動屬性注入配置等
-
-- **EfCoreEngines**：EfCore 配置引擎
-  - DbContext 的注入
-  - DbSet<T> 的注入
-  - EfCore 事件（增刪改）的發現和注入
-  - Run Migrations 等
-
-- **MediatorEngines**：Mediator 的注入
-  - 自動將實現和契約綁定
-  - EfCorePipe 和 ValidatorPipe 的注入
-  - 當契約還沒有對應實現時，自動返回 FakerResponse 的實現
-
-- **ScanServiceEngines**：掃描程序集中是否有類有特性 AsType，當有時，自動注入對應的接口
-
-- **SettingEngines**：掃描基礎設施類中是否有 ISetting 的實現類，當有時，自動賦值並注入
-
-- **SwaggerEngines**：Swagger 的相關配置
-
-#### 啟用引擎功能
-
-在 WebAPI 層的 `Program.cs` 類中使用下面來啟動引擎並開啟對應的功能：
-
-```csharp
-var app = builder
-    .BuildWithEngines(options =>
-    {
-        options.EnableSwagger = true;
-        options.EnableFakerRealization = true;
-        options.EnableAutoResolve = true;
-        options.EnableEfCore = false;
-        options.EnableGlobalExceptionFilter = false;
-        options.EnableTimezoneHandler = false;
-        options.EnableValidator = false;
-        options.EnableCors = false;
-        options.EnableJwt = false;
-    });
+# 停止服务
+docker-compose down
 ```
 
-### 實現一個自定義 AOP 引擎
+### 手动构建
+```bash
+# 构建镜像
+docker build -t contractfirst-api .
 
-引擎根據其執行的期間不同，分成兩種引擎：`IBuilderEngine` 和 `IAppEngine`。
+# 运行容器
+docker run -d \
+  -p 8080:80 \
+  -p 8081:443 \
+  --name contractfirst-api \
+  contractfirst-api
+```
 
-#### BuilderEngine 示例
+## ⚙️ 配置说明
 
-```csharp
-public class RegisterSqlDbContext : IBuilderEngine
+### JWT 配置
+编辑 `src/ContractFirst.Api.Infrastructure/JwtFunction/jwt-setting.json`:
+```json
 {
-    private readonly ContainerBuilder containerBuilder;
-
-    public RegisterSqlDbContext(ContainerBuilder containerBuilder)
-    {
-        this.containerBuilder = containerBuilder;
-    }
-    
-    public void Run()
-    {
-        containerBuilder.RegisterType<SqlDbContext>()
-            .AsSelf()
-            .As<DbContext>()
-            .InstancePerLifetimeScope();
-    }
+  "JwtSetting": {
+    "Issuer": "ContractFirst.Api",
+    "SignKey": "your-256-bit-secret-key-here",
+    "Audience": "ContractFirst.Api.Users",
+    "LongExpiresInMinutes": 43200,  // 30天
+    "ShortExpiresInMinutes": 1440   // 1天
+  }
 }
 ```
 
-或者：
-
-```csharp
-public class RegisterSqlDbContext : IBuilderEngine
+### CORS 配置
+编辑 `src/ContractFirst.Api.Infrastructure/CorsFunction/cors-setting.json`:
+```json
 {
-    private readonly IServiceCollection serviceCollection;
-
-    public RegisterSqlDbContext(IServiceCollection serviceCollection)
-    {
-        this.serviceCollection = serviceCollection;
-    }
-    
-    public void Run()
-    {
-        serviceCollection.AddDbContext<SqlDbContext>();
-    }
+  "CorsSetting": {
+    "AllowedOrigins": [
+      "https://localhost:3000",
+      "https://yourapp.com"
+    ],
+    "AllowedMethods": ["GET", "POST", "PUT", "DELETE"],
+    "AllowedHeaders": ["*"]
+  }
 }
 ```
 
-#### AppEngine 示例
-
-```csharp
-public class UseEfMigrations : IAppEngine
+### 日志配置
+编辑 `src/ContractFirst.Api.Infrastructure/SeqLog/seq-setting.json`:
+```json
 {
-    private readonly SqlDbContext dbContext;
-
-    public UseEfMigrations(SqlDbContext dbContext)
-    {
-        this.dbContext = dbContext;
-    }
-
-    public void Run()
-    {
-        var migrations = dbContext.Database.GetMigrations();
-        if (migrations.Any())
-        {
-            dbContext.Database.Migrate();
-        }
-    }
+  "SeqSetting": {
+    "ServerUrl": "http://localhost:5341",
+    "ApiKey": "your-seq-api-key",
+    "LogLevel": "Information"
+  }
 }
 ```
 
-## 契約優先 (ContractFirst)
+## 🧪 测试
 
-### 什麼是契約優先？
-
-契約優先就是字面意思，當開發者創建好項目之後，便可以開始編寫契約而不需要關注任何實現，引擎會自動生成一個實現，直到真的找到了基於該契約的真正實現。
-
-### 使用契約優先
-
-在 WebAPI 層的 `BuildWithEngines` 方法中，允許引擎生成一個假的契約實現：
-
-```csharp
-options.EnableFakerRealization = true;
+### 运行单元测试
+```bash
+cd src.tests/ContractFirst.Api.UnitTests
+dotnet test
 ```
 
-#### 創建 Get 契約
-
-在 `.Primary` 項目的 Contracts 文件夾下，新建一個繼承 `IRequestContract<,>` 的接口：
-
-```csharp
-public interface IGetUserInfoContract : IRequestContract<GetUserInfoRequest, GetUserInfoResponse>
-{
-}
-
-public class GetUserInfoRequest : IRequest
-{
-    public Guid UserId { get; set; }
-}
-
-public class GetUserInfoResponse : IResponse
-{
-    public Guid UserId { get; set; }
-    public string UserName { get; set; }
-    public int Age { get; set; }
-    public bool Enable { get; set; }
-}
+### 运行集成测试
+```bash
+cd src.tests/ContractFirst.Api.IntegrationTests
+dotnet test
 ```
 
-#### 創建 Controller
+### 测试覆盖率
+```bash
+# 安装覆盖率工具
+dotnet tool install -g dotnet-reportgenerator-globaltool
 
-在 WebAPI 層的 Controllers 文件夾下創建繼承自 `BaseController` 的控制器：
-
-```csharp
-public class UserController : BaseController
-{
-    [HttpGet]
-    [ProducesResponseType(typeof(GetUserInfoResponse), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetUserInfo([FromQuery] GetUserInfoRequest request,
-        CancellationToken cancellationToken)
-    {
-        var response = await Mediator.RequestAsync<GetUserInfoRequest, GetUserInfoResponse>(request, cancellationToken);
-        return Ok(response);
-    }
-}
+# 生成覆盖率报告
+dotnet test --collect:"XPlat Code Coverage"
+reportgenerator -reports:*/TestResults/*/coverage.cobertura.xml -targetdir:coveragereport -reporttypes:Html
 ```
 
-`BaseController` 已經自動注入了 `IMediator`：
+## 🔍 引擎系统
 
-```csharp
-[ApiController]
-[Route("api/[controller]")]
-public class BaseController : ControllerBase
-{
-    [AutoResolve] 
-    public IMediator Mediator { get; set; }
-}
+项目采用创新的引擎系统来管理应用生命周期：
+
+### Builder Engines (构建时引擎)
+- **RegisterSwagger**: Swagger/OpenAPI 配置
+- **RegisterMediator**: Mediator 模式配置
+- **RegisterDbSet**: EF Core 上下文配置
+- **RegisterMongoDb**: MongoDB 客户端配置
+
+### App Engines (运行时引擎)
+- **UseSwagger**: Swagger UI 中间件
+- **UseMigrations**: 数据库迁移
+- **ConfigureConvention**: MVC 约定配置
+
+### 自定义引擎
+通过实现 `IBuilderEngine` 或 `IAppEngine` 接口，可以轻松添加自定义引擎。
+
+## 📊 代码质量
+
+### 代码分析器
+项目包含自定义 Roslyn 分析器：
+- **ContractNamingAnalyzer**: 确保契约接口命名规范
+- 自动在构建过程中执行
+
+### 代码规范
+- 使用 `Nullable` 引用类型
+- 遵循 C# 编码规范
+- 包含 XML 文档注释
+
+## 🚀 部署选项
+
+### 1. Docker 部署
+```bash
+docker build -t contractfirst-api .
+docker run -d -p 8080:80 contractfirst-api
 ```
 
-#### 創建 Post/Put/Patch/Delete 契約
+### 2. GitLab CI/CD
+项目包含完整的 GitLab CI 配置：
+- 自动构建和测试
+- Docker 镜像构建和推送
+- 部署到目标环境
 
-使用 `ICommandContract<>` 或 `ICommandContract<,>`：
+### 3. 传统部署
+```bash
+# 发布应用
+dotnet publish -c Release -o ./publish
 
-```csharp
-public interface IAddUserContract : ICommandContract<AddUserCommand>
-{
-}
-
-public class AddUserCommand : ICommand
-{
-    public string UserName { get; set; }
-    public int Age { get; set; }
-    public bool Enable { get; set; }
-}
+# 运行发布版本
+cd ./publish
+dotnet ContractFirst.Api.dll
 ```
 
-### 實現契約
+## 🤝 贡献指南
 
-在 `.Realization` 項目中創建契約的具體實現：
+我们欢迎社区贡献！请遵循以下步骤：
 
-```csharp
-public class GetUserInfoHandler : IGetUserInfoContract
-{
-    public Task<GetUserInfoResponse> Handle(IReceiveContext<GetUserInfoRequest> context,
-        CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new GetUserInfoResponse
-        {
-            UserId = Guid.NewGuid(),
-            Age = 20,
-            Enable = true,
-            UserName = "real name"
-        });
-    }
+1. **Fork 项目**
+2. **创建功能分支** (`git checkout -b feature/AmazingFeature`)
+3. **提交更改** (`git commit -m 'Add some AmazingFeature'`)
+4. **推送到分支** (`git push origin feature/AmazingFeature`)
+5. **创建 Pull Request**
 
-    public void Validator(ContractValidator<GetUserInfoRequest> validator)
-    {
-        validator.RuleFor(e => e.UserId)
-            .NotEmpty();
-    }
+### 开发规范
+- 遵循现有的代码风格
+- 添加适当的单元测试
+- 更新相关文档
+- 确保所有测试通过
 
-    public Task TestAsync()
-    {
-        throw new NotImplementedException();
-    }
-}
-```
+## 📄 许可证
 
-## 模板的世界觀 (Why design like that?)
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
-### 一個契約應該包含什麼？
+## 📞 支持与联系
 
-在模板的設計者眼中，契約的實現應該至少具備完整的業務邏輯代碼和對參數的驗證。
+- **项目维护者**: [huangkemeng](https://github.com/huangkemeng)
+- **项目主页**: [https://github.com/huangkemeng/ContractFirst.Api.Template](https://github.com/huangkemeng/ContractFirst.Api.Template)
+- **问题反馈**: [GitHub Issues](https://github.com/huangkemeng/ContractFirst.Api.Template/issues)
 
-#### 契約接口定義
+## 🙏 致谢
 
-```csharp
-public interface IRequestContract<TRequest, TResponse> : IContract<TRequest>, IRequestHandler<TRequest, TResponse>
-    where TRequest : class, IRequest where TResponse : class, IResponse
-{
-}
+感谢所有为这个项目做出贡献的开发者和社区成员。特别感谢以下开源项目：
 
-public interface IContract<T> where T : IMessage
-{
-    Task TestAsync();
-    void Validator(ContractValidator<T> validator);
-}
-```
+- [ASP.NET Core](https://github.com/dotnet/aspnetcore)
+- [Entity Framework Core](https://github.com/dotnet/efcore)
+- [AutoMapper](https://github.com/AutoMapper/AutoMapper)
+- [Mediator.Net](https://github.com/mayuanyang/Mediator.Net)
+- [Serilog](https://github.com/serilog/serilog)
 
-這意味著 `IRequestContract` 的實現必須包含三個方法：
+---
 
-```csharp
-Task<TResponse> Handle(IReceiveContext<T> context, CancellationToken cancellationToken);
-Task TestAsync();
-void Validator(ContractValidator<T> validator);
-```
-
-#### Validator 示例
-
-```csharp
-public void Validator(ContractValidator<GetUserInfoRequest> validator)
-{
-    validator.RuleFor(e => e.UserId)
-             .NotEmpty();
-}
-```
-
-### 一個實體應該包含什麼？
-
-所有的實體都應該繼承自 `IEntityPrimary`，也就是至少包含下面兩個字段：
-
-```csharp
-public class User : IEntityPrimary
-{
-    public Guid Id { get; set; }
-    public DateTimeOffset CreatedOn { get; set; }
-}
-```
-
-#### 實體類型
-
-- **`IEfDbEntity`**：如果一個實體後續會使用 EfCore 進行操作，請實現該接口
-- **`IExtendedEntity`**：擴展表的實體請實現該接口
-- **`IMainEntity`**：主表（相對於擴展表）的實體請基於本接口
-- **`IMultipleSystem`**：多個系統共享的實體請實現該接口
-- **`IRelationEntity`**：多對多關系表的實體請基於本接口
-- **`IUpdatableEntity`**：需要記錄更新日期和更新人的實體請基於該接口
-
-### 什麼是 IEfDbEntity？
-
-#### EfCore 實體示例
-
-```csharp
-public class User : IEntityPrimary, IEfDbEntity<User>
-{
-    public User()
-    {
-        this.InitPropertyValues();
-    }
-    
-    public Guid Id { get; set; }
-    public DateTimeOffset CreatedOn { get; set; }
-    public string Name { get; set; }
-
-    public static void ConfigureEntityMapping(EntityTypeBuilder<User> builder)
-    {
-        builder.AutoConfigure();
-        builder.Property(e => e.Name)
-            .HasColumnName("Username")
-            .HasMaxLength(50);
-    }
-}
-```
-
-#### 使用 DbSet 代替 DbContext
-
-```csharp
-public class GetUserInfoHandler : IGetUserInfoContract
-{
-    private readonly DbSet<User> userSet;
-
-    public GetUserInfoHandler(DbSet<User> userSet)
-    {
-        this.userSet = userSet;
-    }
-
-    public async Task<GetUserInfoResponse> Handle(IReceiveContext<GetUserInfoRequest> context,
-        CancellationToken cancellationToken)
-    {
-        var user = await userSet.FirstOrDefaultAsync(e => e.Name == "Matt.H", cancellationToken);
-        return new GetUserInfoResponse
-        {
-            UserId = user?.Id,
-            Age = 20,
-            Enable = user is not null,
-            UserName = user?.Name
-        };
-    }
-}
-```
-
-### 什麼是 IEntityEvent？
-
-EfCore 實體事件分為：
-- **`IMultipleRunEntityEvent`**：多次運行的實體事件
-- **`ISingleRunEntityEvent`**：單次運行的實體事件
-
-#### 創建實體事件
-
-在 `.Primary` 項目中創建事件接口：
-
-```csharp
-public interface IMainEntityAddedEvent : IMultipleRunEntityEvent
-{
-}
-```
-
-#### 綁定實體事件
-
-```csharp
-public class User : IMainEntity, IEfDbEntity<User>, IHasEntityEvent<User>
-{
-    // ... 其他屬性
-
-    public static void ConfigureEntityEvent(EntityEventBuilder<User> builder)
-    {
-        builder.Entity()
-            .HasAddedEvent<IMainEntityAddedEvent>();
-        
-        // 或者綁定屬性事件
-        builder.Property(e => e.Name)
-            .HasUpdatedEvent<IUserUpdatedEvent>();
-    }
-}
-```
-
-#### 實現實體事件
-
-```csharp
-[AsType(LifetimeEnum.Scope, typeof(IMainEntityAddedEvent))]
-public class MainEntityAddedEvent : IMainEntityAddedEvent
-{
-    public Task Handle(EntityEntry entry, CancellationToken cancellationToken)
-    {
-        if (entry.Entity is IMainEntity mainEntity)
-        {
-            // todo: mainEntity.CreatedBy = userId;
-        }
-        return Task.CompletedTask;
-    }
-}
-```
-
-### 自動注入是怎麼做的？
-
-#### 使用 AsType 特性
-
-```csharp
-[AsType(LifetimeEnum.Scope, typeof(ICurrent<User>))]
-public class CurrentUser : ICurrent<User>
-{
-    public Task<User?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<Guid?> GetCurrentUserIdAsync()
-    {
-        throw new NotImplementedException();
-    }
-}
-```
-
-#### ICurrent 實現示例
-
-```csharp
-[AsType(LifetimeEnum.Scope, typeof(ICurrent<Staff>))]
-public class CurrentStaff : ICurrent<Staff>
-{
-    private readonly DbSet<Staff> staffDb;
-    private readonly JwtService jwtService;
-    private readonly IHttpContextAccessor httpContextAccessor;
-
-    public CurrentStaff(
-        DbSet<Staff> staffDb,
-        JwtService jwtService,
-        IHttpContextAccessor httpContextAccessor)
-    {
-        this.staffDb = staffDb;
-        this.jwtService = jwtService;
-        this.httpContextAccessor = httpContextAccessor;
-    }
-
-    public async Task<Staff?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
-    {
-        var id = await GetCurrentUserIdAsync();
-        if (id != null)
-        {
-            return await staffDb.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        }
-        return null;
-    }
-    
-    public async Task<Guid?> GetCurrentUserIdAsync()
-    {
-        var currentAuthHeader = JwtService.GetAuthentication(httpContextAccessor);
-        if (currentAuthHeader != null)
-        {
-            var token = currentAuthHeader.Parameter;
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                var validateResult = await jwtService.ValidateTokenAsync(token, false);
-                if (validateResult.IsValid)
-                {
-                    var staffId = validateResult.ClaimsIdentity.FindFirst(JwtRegisteredClaimNames.Sid)?.Value;
-                    if (staffId != null && Guid.TryParse(staffId, out var id))
-                    {
-                        return id;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-}
-```
-
-### DbUp 是怎麼做的？
-
-模板中使用的是 EfCore 的 Migration，在項目啟動的時候，運行所有未運行的 Migrations：
-
-```csharp
-var dbContext = migrateScope.Resolve<SqlDbContext>();
-var connectString = dbContext.Database.GetConnectionString();
-if (!string.IsNullOrWhiteSpace(connectString))
-{
-    var migrations = dbContext.Database.GetMigrations();
-    if (migrations.Any() && dbContext.Database.CanConnect())
-    {
-        dbContext.Database.Migrate();
-    }
-}
-```
+**⭐ 如果这个项目对您有帮助，请给我们一个 Star！**
